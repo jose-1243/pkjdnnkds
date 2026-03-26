@@ -1,93 +1,14 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>SISTEMA DE DEPURACIÓN | ERROR 400</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        body { background: #0a0a0a; color: #00ff00; font-family: 'Courier New', monospace; padding: 20px; }
-        .terminal { border: 1px solid #00ff00; padding: 20px; background: #000; min-height: 200px; box-shadow: 0 0 15px rgba(0,255,0,0.2); }
-        .error { color: #ff3333; font-weight: bold; border-left: 3px solid #ff3333; padding-left: 10px; margin: 10px 0; }
-        .success { color: #33ff33; }
-        input { background: #111; border: 1px solid #00ff00; color: #00ff00; padding: 8px; margin: 5px; width: 250px; }
-        button { background: #00ff00; color: #000; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        h3 { color: #00f2fe; text-transform: uppercase; }
-    </style>
-</head>
-<body>
-
-    <div class="terminal">
-        <h3>Escáner de Conectividad Supabase</h3>
-        <p>Introduce datos para forzar la consulta:</p>
-        <input type="text" id="userInput" placeholder="USUARIO">
-        <input type="password" id="passInput" placeholder="PASSWORD">
-        <br>
-        <button onclick="ejecutarDiagnostico()">FORZAR CONEXIÓN</button>
-        
-        <div id="output" style="margin-top: 20px; border-top: 1px solid #333; pt: 10px;">
-            >> Sistema listo para diagnóstico.
-        </div>
-    </div>
-
-    <script>
-        // --- CONFIGURACIÓN LIMPIA ---
-        // Usamos .trim() para eliminar cualquier espacio accidental al copiar
-        const URL_BASE = "https://cmqgzwgqvpxuzmivxjcp.supabase.co".trim();
-        const KEY_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtcWd6d2dxdnB4dXptaXZ4amNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NDk0NzQsImV4cCI6MjA5MDEyNTQ3NH0.yxukU3-y26DNLdCfEymPNgUSGmHorhuQNPng_fEkWOo".trim();
-        
-        let db = null;
-        const out = document.getElementById('output');
-
-        function print(msg, isError = false) {
-            const div = document.createElement('div');
-            div.className = isError ? "error" : "success";
-            div.innerHTML = `> ${msg}`;
-            out.appendChild(div);
-        }
-
-        // 1. Intentar inicializar el cliente al cargar la página
-        try {
-            db = supabase.createClient(URL_BASE, KEY_ANON);
-            print("CLIENTE: Inicializado correctamente.");
-        } catch (err) {
-            print(`FALLO CRÍTICO DE CONFIGURACIÓN: ${err.message}`, true);
-        }
-
-        async function ejecutarDiagnostico() {
-            out.innerHTML = "<b>Iniciando secuencia de rastreo...</b>";
+async function verDatosReales() {
+    const { data, error } = await db.from('usuarios').select('*');
+    
+    if (data) {
+        console.log("--- DATOS ENCONTRADOS EN LA DB ---");
+        data.forEach(fila => {
+            // Usamos comillas para ver si hay espacios invisibles
+            console.log(`Usuario: "${fila.username}" | Clave: "${fila.password}"`);
             
-            if (!db) {
-                print("ERROR: El cliente no existe. Revisa que la URL no tenga espacios.", true);
-                return;
-            }
-
-            const user = document.getElementById('userInput').value;
-            const pass = document.getElementById('passInput').value;
-
-            print(`Probando consulta en tabla 'usuarios'...`);
-
-            // PASO 2: Intentar leer la tabla para ver si el RLS o el nombre fallan
-            const { data, error } = await db
-                .from('usuarios')
-                .select('*')
-                .eq('username', user)
-                .eq('password', pass);
-
-            if (error) {
-                print(`ERROR DE SERVIDOR: ${error.message}`, true);
-                print(`CÓDIGO: ${error.code}`, true);
-                
-                if(error.code === "PGRST116") print("Pista: La consulta no devolvió datos.");
-                if(error.code === "42P01") print("Pista: La tabla 'usuarios' no existe (revisa mayúsculas).");
-                return;
-            }
-
-            if (data && data.length > 0) {
-                print(`¡ÉXITO! Usuario '${data[0].username}' identificado con ID: ${data[0].id}`);
-            } else {
-                print("FALLO: Las credenciales no coinciden con ningún registro.", true);
-            }
-        }
-    </script>
-</body>
-</html>
+            // Esto aparecerá en tu terminal de la página
+            print(`En DB hay: USER["${fila.username}"] PASS["${fila.password}"]`);
+        });
+    }
+}
