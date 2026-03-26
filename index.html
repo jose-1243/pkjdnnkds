@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberPanel v1.0 | Acceso de Seguridad</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --bg-color: #05080a;
+            --card-bg: #0d1117;
+            --primary: #00f2fe;
+            --secondary: #4facfe;
+            --text: #ffffff;
+            --error: #ff4757;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: var(--bg-color);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+            background-image: radial-gradient(circle at center, #1a2a3a 0%, #05080a 100%);
+        }
+
+        .login-card {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            width: 320px;
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.1);
+            text-align: center;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 { 
+            text-transform: uppercase; 
+            letter-spacing: 3px; 
+            margin-bottom: 30px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .input-box {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .input-box input {
+            width: 100%;
+            padding: 10px;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid #333;
+            color: white;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .input-box input:focus { border-bottom-color: var(--primary); }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(45deg, var(--secondary), var(--primary));
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            box-shadow: 0 0 15px var(--primary);
+            transform: scale(1.02);
+        }
+
+        #status { margin-top: 15px; font-size: 13px; min-height: 18px; }
+        .error { color: var(--error); animation: shake 0.2s ease-in-out 2; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(5px); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <h2>Access</h2>
+    <div class="input-box">
+        <input type="text" id="user" placeholder="USER_ID" required>
+    </div>
+    <div class="input-box">
+        <input type="password" id="pass" placeholder="PASS_CODE" required>
+    </div>
+    <button onclick="login()">EJECUTAR LOGIN</button>
+    <div id="status"></div>
+</div>
+
+<script>
+    // Configuración con tus datos reales
+    const URL = "https://cmqgzwgqvpxuzmivxjcp.supabase.co";
+    const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtcWd6d2dxdnB4dXptaXZ4amNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NDk0NzQsImV4cCI6MjA5MDEyNTQ3NH0.yxukU3-y26DNLdCfEymPNgUSGmHorhuQNPng_fEkWOo";
+    const supabaseClient = supabase.createClient(URL, KEY);
+
+    async function login() {
+        const u = document.getElementById('user').value;
+        const p = document.getElementById('pass').value;
+        const status = document.getElementById('status');
+
+        status.innerText = "Verificando encriptación...";
+        status.className = "";
+
+        // Consulta real a la tabla 'usuarios'
+        const { data, error } = await supabaseClient
+            .from('usuarios')
+            .select('*')
+            .eq('username', u)
+            .eq('password', p);
+
+        if (data && data.length > 0) {
+            status.style.color = "#2ed573";
+            status.innerText = "ACCESO CONCEDIDO.";
+            setTimeout(() => {
+                alert("¡Bienvenido al sistema real, " + data[0].username + "!");
+            }, 500);
+        } else {
+            status.className = "error";
+            status.innerText = "ERROR: Credenciales denegadas.";
+        }
+    }
+</script>
+
+</body>
+</html>
