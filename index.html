@@ -3,387 +3,397 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TERMINAL CENTRAL | PROYECTO SERGIO</title>
+    <title>LUMINA | PANEL DE CONTROL PREMIUM</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 
     <style>
         :root {
-            --neon-green: #00ff41;
-            --dark-bg: #050505;
-            --panel-bg: #0d0d0d;
-            --border-color: #00ff41;
-            --error-red: #ff3131;
-            --warning-yellow: #ffcc00;
+            --primary: #6366f1;
+            --secondary: #a855f7;
+            --accent: #22d3ee;
+            --bg-dark: #0f172a;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            background-color: var(--dark-bg);
-            color: var(--neon-green);
-            font-family: 'Courier New', Courier, monospace;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-dark);
+            color: white;
+            overflow-x: hidden;
+            min-height: 100vh;
         }
 
-        /* --- PANTALLA DE LOGIN (OVERLAY) --- */
-        #login-overlay {
+        /* FONDO ANIMADO DE GRADIENTES */
+        .bg-animate {
             position: fixed;
-            inset: 0;
-            background: var(--dark-bg);
-            z-index: 1000;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 20% 30%, #1e1b4b 0%, #0f172a 100%);
+        }
+
+        .blob {
+            position: absolute;
+            width: 500px; height: 500px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            filter: blur(80px);
+            border-radius: 50%;
+            opacity: 0.2;
+            animation: move 20s infinite alternate;
+        }
+
+        @keyframes move {
+            from { transform: translate(-10%, -10%); }
+            to { transform: translate(50%, 50%); }
+        }
+
+        /* --- PANTALLA DE ENTRADA (MODERNA) --- */
+        #auth-section {
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            transition: opacity 0.8s ease;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .login-box {
-            width: 380px;
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
             padding: 40px;
-            border: 2px solid var(--border-color);
-            background: #000;
-            box-shadow: 0 0 25px rgba(0, 255, 65, 0.2);
+            width: 400px;
             text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
-        .login-box h1 { font-size: 1.5rem; margin-bottom: 25px; letter-spacing: 3px; }
+        .input-box {
+            position: relative;
+            margin: 20px 0;
+        }
 
-        /* --- INPUTS Y BOTONES --- */
-        .field { margin-bottom: 20px; text-align: left; }
-        label { font-size: 10px; display: block; margin-bottom: 5px; opacity: 0.8; }
-        input {
+        .input-box input {
             width: 100%;
-            padding: 12px;
-            background: #111;
-            border: 1px solid var(--border-color);
-            color: var(--neon-green);
+            padding: 15px 45px;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: white;
             outline: none;
-            font-family: inherit;
-        }
-
-        .btn-core {
-            width: 100%;
-            padding: 15px;
-            background: var(--neon-green);
-            color: #000;
-            border: none;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 2px;
             transition: 0.3s;
         }
 
-        .btn-core:hover { background: #fff; box-shadow: 0 0 15px #fff; }
+        .input-box input:focus { border-color: var(--accent); box-shadow: 0 0 15px rgba(34, 211, 238, 0.3); }
 
-        /* --- ESTRUCTURA DEL DASHBOARD --- */
-        #admin-panel {
-            display: none; /* Se activa tras login */
-            flex: 1;
-            display: grid;
-            grid-template-columns: 240px 1fr;
-            grid-template-rows: 60px 1fr 180px;
+        .input-box i { position: absolute; left: 15px; top: 18px; color: var(--accent); }
+
+        .btn-glow {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        header {
-            grid-column: 1 / 3;
-            background: #000;
-            border-bottom: 1px solid var(--border-color);
+        .btn-glow:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(99, 102, 241, 0.4); }
+
+        /* --- DASHBOARD (PANTALLA PRINCIPAL) --- */
+        #dashboard-section {
+            display: none;
+            padding: 40px;
+            max-width: 1200px;
+            margin: auto;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: 1s ease;
+        }
+
+        .nav-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .grid-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--glass);
+            padding: 25px;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
             display: flex;
             align-items: center;
-            padding: 0 25px;
-            justify-content: space-between;
+            gap: 20px;
         }
 
-        aside {
-            background: #080808;
-            border-right: 1px solid #1a1a1a;
-            padding: 20px;
+        .icon-box {
+            width: 60px; height: 60px;
+            border-radius: 15px;
+            background: rgba(99, 102, 241, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            color: var(--accent);
         }
 
-        .nav-item {
-            padding: 12px;
-            margin-bottom: 10px;
-            border: 1px solid transparent;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .nav-item:hover { border-color: var(--neon-green); background: #111; }
-        .nav-item.active { background: var(--neon-green); color: #000; font-weight: bold; }
-
-        main {
-            background: #000;
+        /* TABLA MODERNA */
+        .table-container {
+            background: var(--glass);
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
             padding: 30px;
-            overflow-y: auto;
+            overflow-x: auto;
         }
 
-        /* --- TABLAS Y CARDS --- */
-        .card {
-            background: #0f0f0f;
-            border: 1px solid #222;
-            padding: 20px;
-            margin-bottom: 25px;
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { text-align: left; padding: 15px; opacity: 0.6; font-weight: 400; font-size: 14px; }
+        td { padding: 20px 15px; border-top: 1px solid var(--glass-border); }
+
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            background: rgba(34, 211, 238, 0.1);
+            color: var(--accent);
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
+        .action-btn {
+            background: none; border: none; color: #ff4444; cursor: pointer; font-size: 18px;
+            transition: 0.3s;
+        }
+        .action-btn:hover { transform: scale(1.2); }
+
+        /* MODAL / FORM */
+        .add-user-form {
+            background: var(--glass);
+            padding: 30px;
+            border-radius: 24px;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
         }
 
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #1a1a1a;
-            font-size: 13px;
+        .form-group { flex: 1; }
+        .form-group label { font-size: 12px; margin-bottom: 8px; display: block; opacity: 0.7; }
+        .form-group input {
+            width: 100%; padding: 12px; background: rgba(0,0,0,0.2);
+            border: 1px solid var(--glass-border); border-radius: 10px; color: white;
         }
 
-        th { color: #fff; background: #151515; }
-
-        .btn-sm {
-            padding: 5px 10px;
-            font-size: 10px;
-            background: var(--error-red);
-            color: #fff;
-            border: none;
-            cursor: pointer;
+        /* NOTIFICACIONES */
+        #toast {
+            position: fixed; bottom: 20px; right: 20px;
+            padding: 15px 30px; border-radius: 12px;
+            background: var(--primary); color: white;
+            transform: translateY(100px); transition: 0.5s; z-index: 1001;
         }
 
-        /* --- TERMINAL (FOOTER) --- */
-        footer {
-            grid-column: 1 / 3;
-            background: #000;
-            border-top: 1px solid #1a1a1a;
-            padding: 15px;
-            font-size: 11px;
-            overflow-y: auto;
-            color: #008f11;
-        }
-
-        .log-entry { margin-bottom: 4px; }
-        .log-time { color: #555; margin-right: 8px; }
-
-        /* --- ANIMACIONES --- */
-        .blink { animation: blinker 1s linear infinite; }
-        @keyframes blinker { 50% { opacity: 0; } }
-
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: var(--neon-green); }
     </style>
 </head>
 <body>
 
-    <div id="login-overlay">
-        <div class="login-box">
-            <h1>SISTEMA_LOGIN</h1>
-            <div class="field">
-                <label>IDENTIFICACIÓN DE USUARIO</label>
-                <input type="text" id="userInput" placeholder="x / admin">
-            </div>
-            <div class="field">
-                <label>CÓDIGO DE ACCESO</label>
-                <input type="password" id="passInput" placeholder="x / password123">
-            </div>
-            <button class="btn-core" onclick="authProtocol()">Sincronizar</button>
-            <p id="auth-status" style="margin-top:20px; font-size:11px; color:var(--error-red)"></p>
-        </div>
+    <div class="bg-animate">
+        <div class="blob"></div>
     </div>
 
-    <div id="admin-panel" style="display: none;">
-        <header>
-            <div style="display:flex; align-items:center;">
-                <div style="width:10px; height:10px; background:var(--neon-green); border-radius:50%; margin-right:10px;" class="blink"></div>
-                <span>ESTADO: <span style="color:#fff">EN LÍNEA</span> | USUARIO: <span id="current-user" style="color:#fff">-</span></span>
+    <section id="auth-section">
+        <div class="glass-card">
+            <lottie-player src="https://assets1.lottiefiles.com/packages/lf20_myejioos.json" background="transparent" speed="1" style="width: 150px; height: 150px; margin: auto;" loop autoplay></lottie-player>
+            <h2 style="margin-bottom: 10px;">Lumina OS</h2>
+            <p style="font-size: 14px; opacity: 0.6; margin-bottom: 30px;">Ingresa tus credenciales para continuar</p>
+            
+            <div class="input-box">
+                <i class="fas fa-user"></i>
+                <input type="text" id="userIn" placeholder="Usuario">
             </div>
-            <button onclick="logout()" style="background:none; border:1px solid #333; color:#fff; padding:5px 15px; cursor:pointer;">CERRAR_SESIÓN</button>
-        </header>
+            <div class="input-box">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="passIn" placeholder="Contraseña">
+            </div>
+            
+            <button class="btn-glow" onclick="iniciarProtocolo()">Acceder al Sistema</button>
+            <p id="error-msg" style="color: #ff4444; font-size: 12px; margin-top: 15px;"></p>
+        </div>
+    </section>
 
-        <aside>
-            <h4 style="font-size:12px; margin-bottom:20px; color:#555;">MÓDULOS_SISTEMA</h4>
-            <div class="nav-item active">💾 GESTIÓN_DB</div>
-            <div class="nav-item">📡 TRÁFICO_RED</div>
-            <div class="nav-item">🛠️ AJUSTES</div>
-        </aside>
+    <section id="dashboard-section">
+        <div class="nav-header">
+            <div>
+                <h1 id="welcome-text">Hola, Sergio</h1>
+                <p style="opacity: 0.6; font-size: 14px;">Hoy es <span id="fecha-actual"></span></p>
+            </div>
+            <button class="btn-glow" style="width: auto; padding: 10px 25px;" onclick="salir()">Cerrar Sesión</button>
+        </div>
 
-        <main>
-            <div class="card">
-                <h3>REGISTRO DE USUARIOS (SUPABASE)</h3>
-                <p style="font-size:12px; color:#666; margin-bottom:20px;">Manipulación directa de la tabla `usuarios` vía API Publishable.</p>
-                
-                <div style="display:flex; gap:20px;">
-                    <div style="flex:1; border:1px solid #222; padding:15px;">
-                        <h4 style="font-size:12px; margin-bottom:10px;">AÑADIR NUEVO REGISTRO</h4>
-                        <input type="text" id="addU" placeholder="Usuario" style="margin-bottom:10px; font-size:12px;">
-                        <input type="text" id="addP" placeholder="Password" style="margin-bottom:10px; font-size:12px;">
-                        <button class="btn-core" style="padding:8px;" onclick="createNewUser()">Insertar</button>
-                    </div>
-
-                    <div style="flex:2;">
-                        <table id="mainTable">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>USERNAME</th>
-                                    <th>PASSWORD</th>
-                                    <th>ACCIONES</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tableContent">
-                                </tbody>
-                        </table>
-                    </div>
+        <div class="grid-stats">
+            <div class="stat-card">
+                <div class="icon-box"><i class="fas fa-users"></i></div>
+                <div>
+                    <p style="opacity: 0.6; font-size: 12px;">Usuarios Totales</p>
+                    <h2 id="count-users">0</h2>
                 </div>
             </div>
-        </main>
+            <div class="stat-card">
+                <div class="icon-box"><i class="fas fa-database"></i></div>
+                <div>
+                    <p style="opacity: 0.6; font-size: 12px;">Estado DB</p>
+                    <h2 style="color: var(--accent);">Activo</h2>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="icon-box"><i class="fas fa-shield-alt"></i></div>
+                <div>
+                    <p style="opacity: 0.6; font-size: 12px;">Seguridad</p>
+                    <h2 style="color: #4ade80;">SSL 256</h2>
+                </div>
+            </div>
+        </div>
 
-        <footer id="terminal">
-            <div class="log-entry"><span class="log-time">[00:00:00]</span> Esperando órdenes...</div>
-        </footer>
-    </div>
+        <div class="add-user-form">
+            <div class="form-group">
+                <label>Nombre de Usuario</label>
+                <input type="text" id="newUserName" placeholder="Ej: Juan Perez">
+            </div>
+            <div class="form-group">
+                <label>Clave de Acceso</label>
+                <input type="text" id="newUserPass" placeholder="Ej: 1234abc">
+            </div>
+            <button class="btn-glow" style="width: 200px;" onclick="guardarUsuario()">Añadir Registro</button>
+        </div>
+
+        <div class="table-container">
+            <h3>Registros en Tiempo Real</h3>
+            <table id="userTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>USUARIO</th>
+                        <th>CONTRASEÑA</th>
+                        <th>ESTADO</th>
+                        <th>ACCIONES</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <div id="toast">Notificación de sistema</div>
 
     <script>
-        // --- CONFIGURACIÓN DE NODO (Extraída de tus capturas) ---
         const SB_URL = "https://cmqgzwgqvpxuzmivxjcp.supabase.co";
-        const SB_KEY = "sb_publishable_jM1_oVJyaoB_03tMbw9m8w_69_ODcVr"; // Tu Publishable Key
+        const SB_KEY = "sb_publishable_jM1_oVJyaoB_03tMbw9m8w_69_ODcVr";
+        const db = supabase.createClient(SB_URL, SB_KEY);
 
-        let client;
-        const terminal = document.getElementById('terminal');
+        // FECHA ACTUAL
+        document.getElementById('fecha-actual').innerText = new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-        function writeLog(msg, type = 'info') {
-            const now = new Date().toLocaleTimeString();
-            let color = "#008f11";
-            if (type === 'error') color = "var(--error-red)";
-            if (type === 'warn') color = "var(--warning-yellow)";
-            
-            terminal.innerHTML += `<div class="log-entry"><span class="log-time">[${now}]</span> <span style="color:${color}">${msg}</span></div>`;
-            terminal.scrollTop = terminal.scrollHeight;
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.style.transform = "translateY(0)";
+            setTimeout(() => t.style.transform = "translateY(100px)", 3000);
         }
 
-        // Inicialización
-        window.onload = () => {
-            try {
-                client = supabase.createClient(SB_URL, SB_KEY);
-                writeLog("Conexión establecida con el nodo cmqgzwg...");
-                checkSession();
-            } catch (e) {
-                writeLog("Fallo crítico al cargar Supabase: " + e.message, 'error');
-            }
-        };
+        async function iniciarProtocolo() {
+            const u = document.getElementById('userIn').value.trim().toLowerCase();
+            const p = document.getElementById('passIn').value.trim();
 
-        // PROTOCOLO DE AUTENTICACIÓN
-        async function authProtocol() {
-            const u = document.getElementById('userInput').value.trim().toLowerCase();
-            const p = document.getElementById('passInput').value.trim();
-            const status = document.getElementById('auth-status');
+            const { data, error } = await db.from('usuarios').select('*');
+            if (error) return alert("Error de red");
 
-            writeLog(`Intento de acceso: ${u}...`);
+            const found = data.find(f => f.username.toLowerCase() === u && f.password === p);
 
-            try {
-                // Pedimos todos los usuarios para comparar localmente (más robusto)
-                const { data, error } = await client.from('usuarios').select('*');
-
-                if (error) throw error;
-
-                writeLog(`Registros encontrados en DB: ${data.length}`);
-
-                const user = data.find(f => f.username.toLowerCase() === u && f.password === p);
-
-                if (user) {
-                    writeLog(`Acceso exitoso. Bienvenido ${u}`, 'warn');
-                    localStorage.setItem('sergio_session', u);
-                    launchDashboard(u);
-                } else {
-                    status.innerHTML = "ACCESO DENEGADO: CREDENCIALES ERRÓNEAS";
-                    writeLog(`Fallo de login para usuario: ${u}`, 'error');
-                }
-
-            } catch (e) {
-                writeLog("Error de red: " + e.message, 'error');
+            if (found) {
+                document.getElementById('auth-section').style.opacity = "0";
+                setTimeout(() => {
+                    document.getElementById('auth-section').style.display = "none";
+                    document.getElementById('dashboard-section').style.display = "block";
+                    setTimeout(() => document.getElementById('dashboard-section').style.opacity = "1", 100);
+                    renderTable();
+                }, 800);
+                localStorage.setItem('user_session', u);
+            } else {
+                document.getElementById('error-msg').innerText = "Credenciales incorrectas. Intenta con x/x";
             }
         }
 
-        function launchDashboard(username) {
-            document.getElementById('login-overlay').style.opacity = "0";
-            setTimeout(() => {
-                document.getElementById('login-overlay').style.display = "none";
-                document.getElementById('admin-panel').style.display = "grid";
-                document.getElementById('current-user').innerText = username.toUpperCase();
-                refreshTable();
-            }, 800);
-        }
+        async function renderTable() {
+            const { data, error } = await db.from('usuarios').select('*').order('id', { ascending: false });
+            if (error) return;
 
-        // GESTIÓN DE TABLA (CRUD)
-        async function refreshTable() {
-            writeLog("Sincronizando tabla de usuarios...");
-            const tbody = document.getElementById('tableContent');
-            tbody.innerHTML = "<tr><td colspan='4'>Cargando datos...</td></tr>";
+            document.getElementById('count-users').innerText = data.length;
+            const body = document.getElementById('tableBody');
+            body.innerHTML = "";
 
-            const { data, error } = await client.from('usuarios').select('*').order('id', { ascending: true });
-
-            if (error) {
-                writeLog("Error al sincronizar: " + error.message, 'error');
-                return;
-            }
-
-            tbody.innerHTML = "";
-            data.forEach(row => {
-                tbody.innerHTML += `
+            data.forEach(f => {
+                body.innerHTML += `
                     <tr>
-                        <td>${row.id}</td>
-                        <td style="color:#fff">${row.username}</td>
-                        <td>${row.password}</td>
-                        <td><button class="btn-sm" onclick="deleteUser(${row.id})">ELIMINAR</button></td>
+                        <td>#${f.id}</td>
+                        <td style="font-weight:600">${f.username}</td>
+                        <td style="font-family: monospace; opacity: 0.7;">${f.password}</td>
+                        <td><span class="badge">Online</span></td>
+                        <td><button class="action-btn" onclick="borrarRegistro(${f.id})"><i class="fas fa-trash-alt"></i></button></td>
                     </tr>
                 `;
             });
         }
 
-        async function createNewUser() {
-            const u = document.getElementById('addU').value.trim();
-            const p = document.getElementById('addP').value.trim();
+        async function guardarUsuario() {
+            const u = document.getElementById('newUserName').value.trim();
+            const p = document.getElementById('newUserPass').value.trim();
 
-            if (!u || !p) return writeLog("Campos vacíos. Abortando inserción.", 'warn');
+            if (!u || !p) return showToast("Por favor llena ambos campos");
 
-            writeLog(`Insertando usuario: ${u}...`);
-            const { error } = await client.from('usuarios').insert([{ username: u, password: p }]);
+            const { error } = await db.from('usuarios').insert([{ username: u, password: p }]);
+            if (error) return showToast("Fallo al guardar");
 
-            if (error) {
-                writeLog("Error al crear: " + error.message, 'error');
-            } else {
-                writeLog("Registro insertado correctamente.", 'warn');
-                document.getElementById('addU').value = "";
-                document.getElementById('addP').value = "";
-                refreshTable();
-            }
+            showToast("Usuario guardado con éxito");
+            renderTable();
+            document.getElementById('newUserName').value = "";
+            document.getElementById('newUserPass').value = "";
         }
 
-        async function deleteUser(id) {
-            if (!confirm(`¿Eliminar registro ID ${id}?`)) return;
-
-            writeLog(`Borrando registro ID ${id}...`);
-            const { error } = await client.from('usuarios').delete().eq('id', id);
-
-            if (error) {
-                writeLog("Error al borrar: " + error.message, 'error');
-            } else {
-                writeLog(`ID ${id} eliminado del sistema.`, 'warn');
-                refreshTable();
-            }
+        async function borrarRegistro(id) {
+            if (!confirm("¿Borrar este usuario de la base de datos?")) return;
+            const { error } = await db.from('usuarios').delete().eq('id', id);
+            if (error) return showToast("Error al eliminar");
+            showToast("Registro borrado");
+            renderTable();
         }
 
-        function checkSession() {
-            const s = localStorage.getItem('sergio_session');
-            if (s) launchDashboard(s);
-        }
-
-        function logout() {
-            localStorage.removeItem('sergio_session');
+        function salir() {
+            localStorage.removeItem('user_session');
             location.reload();
+        }
+
+        // AUTO-LOGIN
+        if (localStorage.getItem('user_session')) {
+            document.getElementById('auth-section').style.display = "none";
+            document.getElementById('dashboard-section').style.display = "block";
+            document.getElementById('dashboard-section').style.opacity = "1";
+            renderTable();
         }
     </script>
 </body>
