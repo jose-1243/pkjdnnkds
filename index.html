@@ -1,52 +1,53 @@
 <script>
-    const CONFIG_URL = "https://cmqgzwgqvpxuzmivxjcp.supabase.co".trim();
-    const CONFIG_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtcWd6d2dxdnB4dXptaXZ4amNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NDk0NzQsImV4cCI6MjA5MDEyNTQ3NH0.yxukU3-y26DNLdCfEymPNgUSGmHorhuQNPng_fEkWOo".trim();
+    const URL_FINAL = "https://cmqgzwgqvpxuzmivxjcp.supabase.co".trim();
+    const KEY_FINAL = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtcWd6d2dxdnB4dXptaXZ4amNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NDk0NzQsImV4cCI6MjA5MDEyNTQ3NH0.yxukU3-y26DNLdCfEymPNgUSGmHorhuQNPng_fEkWOo".trim();
     
-    const instanciaDB = supabase.createClient(CONFIG_URL, CONFIG_KEY);
+    const db = supabase.createClient(URL_FINAL, KEY_FINAL);
 
     async function verificarAhora() {
         const palla = document.getElementById('monitor');
-        const uDigitado = document.getElementById('campoUser').value.trim();
-        const pDigitado = document.getElementById('campoPass').value.trim();
+        const uDig = document.getElementById('campoUser').value.trim();
+        const pDig = document.getElementById('campoPass').value.trim();
 
-        palla.innerHTML = ">> Extrayendo registros de la base de datos...";
+        palla.innerHTML = "<b>SISTEMA DE RASTREO ACTIVO...</b><br>";
 
         try {
-            // CAMBIO CLAVE: Traemos TODO sin filtrar en la nube para ver qué llega
-            const { data, error } = await instanciaDB.from('usuarios').select('*');
+            // PRUEBA A: ¿La tabla existe y es legible?
+            const { data, error } = await db.from('usuarios').select('*');
 
-            if (error) throw error;
-
-            if (!data || data.length === 0) {
-                palla.innerHTML = "<div class='fail'>>> ERROR: La base de datos devolvió 0 registros. Revisa el RLS en Supabase.</div>";
+            if (error) {
+                palla.innerHTML += `<div class="fail">ERROR DE SUPABASE: ${error.message} (Código: ${error.code})</div>`;
                 return;
             }
 
-            palla.innerHTML = `>> Registros recibidos: ${data.length}. Analizando...<br>`;
+            // PRUEBA B: ¿Hay datos?
+            if (!data || data.length === 0) {
+                palla.innerHTML += `<div class="fail">LA TABLA DEVUELVE 0 FILAS. <br>Esto significa que el RLS está activado en Supabase y no deja leer nada.</div>`;
+                return;
+            }
 
-            let exito = false;
+            palla.innerHTML += `Registros encontrados: ${data.length}<br>`;
 
-            data.forEach(fila => {
-                const uDB = String(fila.username).trim();
-                const pDB = String(fila.password).trim();
+            // PRUEBA C: Comparación binaria
+            let encontrado = false;
+            data.forEach(f => {
+                const uDB = String(f.username).trim();
+                const pDB = String(f.password).trim();
+                
+                palla.innerHTML += `Comparando: [${uDig}] vs [${uDB}] -> `;
 
-                // Mostramos en pantalla qué está comparando exactamente
-                palla.innerHTML += `> Comparando: [${uDigitado}] con [${uDB}]... `;
-
-                if (uDB === uDigitado && pDB === pDigitado) {
-                    exito = true;
-                    palla.innerHTML += "<span class='match'>COINCIDE</span><br>";
+                if (uDB === uDig && pDB === pDig) {
+                    encontrado = true;
+                    palla.innerHTML += "<span class='match'>¡IGUALES!</span><br>";
                 } else {
-                    palla.innerHTML += "<span class='fail'>NO COINCIDE</span><br>";
+                    palla.innerHTML += "<span class='fail'>DIFERENTES</span><br>";
                 }
             });
 
-            if (exito) {
-                alert("¡SISTEMA DESBLOQUEADO!");
-            }
+            if (encontrado) alert("¡LOGUEADO!");
 
-        } catch (err) {
-            palla.innerHTML = `<div class="fail">ERROR DE CONEXIÓN: ${err.message}</div>`;
+        } catch (e) {
+            palla.innerHTML += `<div class="fail">FALLO TOTAL: ${e.message}</div>`;
         }
     }
 </script>
