@@ -1,19 +1,69 @@
-async function ejecutarDiagnostico() {
-    out.innerHTML = "<b>ESCANEO DE FUERZA BRUTA...</b>";
-    
-    // 1. Traemos TODO lo que hay en la tabla sin filtros
-    const { data, error } = await db.from('usuarios').select('*');
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>SISTEMA OPERATIVO | SERGIO</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { background: #050505; color: #00ff00; font-family: monospace; padding: 20px; }
+        .panel { border: 1px solid #00ff00; padding: 20px; max-width: 400px; margin: auto; }
+        input { background: #000; border: 1px solid #00ff00; color: #00ff00; padding: 10px; width: 100%; margin-bottom: 10px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #00ff00; border: none; font-weight: bold; cursor: pointer; }
+        #terminal { margin-top: 20px; font-size: 12px; color: #00cc00; border-top: 1px solid #333; padding-top: 10px; }
+    </style>
+</head>
+<body>
 
-    if (error) {
-        print(`ERROR: ${error.message}`, true);
-        return;
-    }
+    <div class="panel">
+        <h3 style="text-align: center;">ACCESO RESTRINGIDO</h3>
+        <input type="text" id="u" placeholder="USUARIO (admin)">
+        <input type="password" id="p" placeholder="CLAVE (password123)">
+        <button onclick="validar()">ENTRAR AL SISTEMA</button>
+        
+        <div id="terminal">>> Esperando autenticación...</div>
+    </div>
 
-    if (!data || data.length === 0) {
-        print("LA TABLA ESTÁ VACÍA. No hay filas en Supabase.", true);
-        return;
-    }
+    <script>
+        // 1. Inicialización limpia (evita el error de "already declared")
+        const SB_URL = "https://cmqgzwgqvpxuzmivxjcp.supabase.co".trim();
+        const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtcWd6d2dxdnB4dXptaXZ4amNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NDk0NzQsImV4cCI6MjA5MDEyNTQ3NH0.yxukU3-y26DNLdCfEymPNgUSGmHorhuQNPng_fEkWOo".trim();
+        
+        const db = supabase.createClient(SB_URL, SB_KEY);
+        const log = document.getElementById('terminal');
 
+        async function validar() {
+            const user = document.getElementById('u').value.trim();
+            const pass = document.getElementById('p').value.trim();
+
+            log.innerHTML = ">> Verificando en base de datos...";
+
+            try {
+                // Consulta exacta a tu tabla de la foto
+                const { data, error } = await db
+                    .from('usuarios')
+                    .select('*')
+                    .eq('username', user)
+                    .eq('password', pass);
+
+                if (error) {
+                    log.innerHTML = ">> ERROR: " + error.message;
+                    return;
+                }
+
+                if (data && data.length > 0) {
+                    log.innerHTML = "<span style='color:white'>>> ACCESO CONCEDIDO. Bienvenido " + data[0].username + "</span>";
+                    alert("¡LOGIN CORRECTO!");
+                } else {
+                    log.innerHTML = "<span style='color:red'>>> ERROR: Datos no encontrados en la tabla.</span>";
+                    console.log("Intento con:", user, pass);
+                }
+            } catch (err) {
+                log.innerHTML = ">> ERROR CRÍTICO: " + err.message;
+            }
+        }
+    </script>
+</body>
+</html>
     print(`Se encontraron ${data.length} registros. Analizando...`);
 
     data.forEach(fila => {
