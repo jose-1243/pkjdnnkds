@@ -1,53 +1,87 @@
-<script>
-    const URL_FINAL = "https://cmqgzwgqvpxuzmivxjcp.supabase.co".trim();
-    const KEY_FINAL = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtcWd6d2dxdnB4dXptaXZ4amNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NDk0NzQsImV4cCI6MjA5MDEyNTQ3NH0.yxukU3-y26DNLdCfEymPNgUSGmHorhuQNPng_fEkWOo".trim();
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>SISTEMA SERGIO | CORRECCIÓN CRÍTICA</title>
     
-    const db = supabase.createClient(URL_FINAL, KEY_FINAL);
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    async function verificarAhora() {
-        const palla = document.getElementById('monitor');
-        const uDig = document.getElementById('campoUser').value.trim();
-        const pDig = document.getElementById('campoPass').value.trim();
+    <style>
+        body { background: #000; color: #0f0; font-family: monospace; padding: 30px; }
+        .box { border: 2px solid #0f0; padding: 20px; max-width: 350px; margin: auto; text-align: center; }
+        input { background: #111; border: 1px solid #0f0; color: #0f0; width: 90%; padding: 10px; margin: 10px 0; }
+        button { width: 95%; padding: 12px; background: #0f0; color: #000; font-weight: bold; cursor: pointer; border: none; }
+        #monitor { margin-top: 20px; font-size: 11px; text-align: left; border-top: 1px solid #333; padding-top: 10px; }
+        .err { color: #ff4444; }
+    </style>
+</head>
+<body>
 
-        palla.innerHTML = "<b>SISTEMA DE RASTREO ACTIVO...</b><br>";
+    <div class="box">
+        <h3>ACCESO NIVEL 1</h3>
+        <input type="text" id="u" placeholder="USUARIO">
+        <input type="password" id="p" placeholder="CONTRASEÑA">
+        <button id="btnEntrar">CONECTAR</button>
+        
+        <div id="monitor">>> Esperando inicialización...</div>
+    </div>
 
-        try {
-            // PRUEBA A: ¿La tabla existe y es legible?
-            const { data, error } = await db.from('usuarios').select('*');
+    <script>
+        // Variables de conexión
+        const URL_DB = "https://cmqgzwgqvpxuzmivxjcp.supabase.co";
+        const KEY_DB = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtcWd6d2dxdnB4dXptaXZ4amNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NDk0NzQsImV4cCI6MjA5MDEyNTQ3NH0.yxukU3-y26DNLdCfEymPNgUSGmHorhuQNPng_fEkWOo";
+        
+        let client;
+        const monitor = document.getElementById('monitor');
+
+        // Función para inicializar con seguridad
+        window.onload = function() {
+            try {
+                if (typeof supabase === 'undefined') {
+                    monitor.innerHTML = "<span class='err'>>> ERROR: No se pudo cargar la librería Supabase. Revisa tu conexión a Internet.</span>";
+                } else {
+                    client = supabase.createClient(URL_BASE = URL_DB, KEY_BASE = KEY_DB);
+                    monitor.innerHTML = ">> Librería cargada. Sistema listo.";
+                }
+            } catch (e) {
+                monitor.innerHTML = "<span class='err'>>> ERROR INICIAL: " + e.message + "</span>";
+            }
+        };
+
+        // Evento del botón
+        document.getElementById('btnEntrar').onclick = async function() {
+            const userIn = document.getElementById('u').value.trim();
+            const passIn = document.getElementById('p').value.trim();
+
+            if (!client) {
+                alert("El sistema no está conectado.");
+                return;
+            }
+
+            monitor.innerHTML = ">> Consultando...";
+
+            const { data, error } = await client.from('usuarios').select('*');
 
             if (error) {
-                palla.innerHTML += `<div class="fail">ERROR DE SUPABASE: ${error.message} (Código: ${error.code})</div>`;
+                monitor.innerHTML = "<span class='err'>>> ERROR DB: " + error.message + "</span>";
                 return;
             }
 
-            // PRUEBA B: ¿Hay datos?
-            if (!data || data.length === 0) {
-                palla.innerHTML += `<div class="fail">LA TABLA DEVUELVE 0 FILAS. <br>Esto significa que el RLS está activado en Supabase y no deja leer nada.</div>`;
-                return;
-            }
+            let loginOk = false;
+            monitor.innerHTML = ""; // Limpiar
 
-            palla.innerHTML += `Registros encontrados: ${data.length}<br>`;
-
-            // PRUEBA C: Comparación binaria
-            let encontrado = false;
-            data.forEach(f => {
-                const uDB = String(f.username).trim();
-                const pDB = String(f.password).trim();
-                
-                palla.innerHTML += `Comparando: [${uDig}] vs [${uDB}] -> `;
-
-                if (uDB === uDig && pDB === pDig) {
-                    encontrado = true;
-                    palla.innerHTML += "<span class='match'>¡IGUALES!</span><br>";
+            data.forEach(fila => {
+                if (fila.username === userIn && fila.password === passIn) {
+                    loginOk = true;
+                    monitor.innerHTML += ">> [OK] Coincidencia con " + fila.username + "<br>";
                 } else {
-                    palla.innerHTML += "<span class='fail'>DIFERENTES</span><br>";
+                    monitor.innerHTML += ">> [NO] Comparando con " + fila.username + "<br>";
                 }
             });
 
-            if (encontrado) alert("¡LOGUEADO!");
-
-        } catch (e) {
-            palla.innerHTML += `<div class="fail">FALLO TOTAL: ${e.message}</div>`;
-        }
-    }
-</script>
+            if (loginOk) alert("¡BIENVENIDO, SERGIO!");
+            else monitor.innerHTML += "<span class='err'>>> CREDENCIALES NO VÁLIDAS.</span>";
+        };
+    </script>
+</body>
+</html>
