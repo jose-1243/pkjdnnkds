@@ -3,103 +3,343 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA OPERATIVO | ACCESO SEGURO</title>
+    <title>SISTEMA OPERATIVO CENTRAL | SERGIO</title>
     
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.npmmirror.com/package/@supabase/supabase-js/2.39.7/dist/umd/supabase.js"></script>
 
     <style>
-        body { background: #000; color: #00ff00; font-family: 'Courier New', monospace; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .login-card { border: 2px solid #00ff00; padding: 30px; background: #050505; box-shadow: 0 0 15px #00ff0055; width: 320px; }
-        h2 { text-align: center; font-size: 1.2rem; margin-bottom: 20px; border-bottom: 1px solid #00ff00; padding-bottom: 10px; }
-        input { background: #000; border: 1px solid #00ff00; color: #00ff00; width: 100%; padding: 12px; margin-bottom: 15px; box-sizing: border-box; outline: none; }
-        button { width: 100%; padding: 12px; background: #00ff00; color: #000; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:hover { background: #fff; color: #000; }
-        #terminal-out { margin-top: 20px; font-size: 11px; color: #00cc00; height: 80px; overflow-y: auto; border-top: 1px solid #222; padding-top: 10px; }
-        .error { color: #ff3333; }
-        .success { color: #ffffff; font-weight: bold; }
+        :root {
+            --neon: #00ff00;
+            --bg: #050505;
+            --dark-grey: #111;
+            --error: #ff3333;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            background-color: var(--bg);
+            color: var(--neon);
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            height: 100vh;
+        }
+
+        /* --- PANTALLA DE LOGIN --- */
+        #login-screen {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            z-index: 999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: 1s;
+        }
+
+        .login-card {
+            border: 2px solid var(--neon);
+            padding: 40px;
+            width: 350px;
+            box-shadow: 0 0 20px rgba(0,255,0,0.2);
+            background: #000;
+        }
+
+        /* --- PANEL PRINCIPAL (DASHBOARD) --- */
+        #main-dashboard {
+            display: none; /* Se activa al loguear */
+            width: 100%;
+            height: 100%;
+            grid-template-columns: 250px 1fr;
+            grid-template-rows: 60px 1fr 200px;
+        }
+
+        header {
+            grid-column: 1 / 3;
+            border-bottom: 1px solid var(--neon);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            justify-content: space-between;
+            background: #000;
+        }
+
+        aside {
+            border-right: 1px solid var(--neon);
+            padding: 20px;
+            background: #080808;
+        }
+
+        main {
+            padding: 30px;
+            overflow-y: auto;
+            background: radial-gradient(circle at center, #0a0a0a 0%, #000 100%);
+        }
+
+        footer {
+            grid-column: 1 / 3;
+            border-top: 1px solid var(--neon);
+            background: #000;
+            padding: 10px;
+            overflow-y: scroll;
+            font-size: 12px;
+        }
+
+        /* --- COMPONENTES --- */
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-size: 12px; }
+        input {
+            width: 100%;
+            padding: 10px;
+            background: var(--dark-grey);
+            border: 1px solid var(--neon);
+            color: var(--neon);
+            outline: none;
+        }
+
+        .btn {
+            background: var(--neon);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            width: 100%;
+        }
+
+        .btn:hover { background: #fff; box-shadow: 0 0 10px #fff; }
+
+        .btn-danger { background: var(--error); color: #fff; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #222;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th { background: #111; color: #fff; }
+
+        .status-dot {
+            height: 10px;
+            width: 10px;
+            background-color: var(--neon);
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 10px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+
+        .card-stat {
+            border: 1px solid #333;
+            padding: 20px;
+            background: #111;
+            margin-bottom: 20px;
+        }
+
+        /* --- SCROLLBAR --- */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: var(--neon); }
+
     </style>
 </head>
 <body>
 
-    <div class="login-card">
-        <h2>CORE_ACCESS v4.0</h2>
-        <input type="text" id="userInput" placeholder="USUARIO (admin / x)" autocomplete="off">
-        <input type="password" id="passInput" placeholder="CONTRASEÑA (x)">
-        <button id="btnConnect">EJECUTAR SYNC</button>
-        
-        <div id="terminal-out">>> Esperando inicialización...</div>
+    <div id="login-screen">
+        <div class="login-card">
+            <h2 style="text-align:center">CORE_AUTH v5</h2>
+            <div class="input-group">
+                <label>IDENTIFICADOR</label>
+                <input type="text" id="logUser" placeholder="admin / x">
+            </div>
+            <div class="input-group">
+                <label>CÓDIGO DE ACCESO</label>
+                <input type="password" id="logPass" placeholder="password123 / x">
+            </div>
+            <button class="btn" onclick="intentarLogin()">Sincronizar</button>
+            <p id="login-msg" style="font-size: 10px; margin-top: 15px; text-align: center;"></p>
+        </div>
+    </div>
+
+    <div id="main-dashboard">
+        <header>
+            <div><span class="status-dot"></span> SISTEMA EN LÍNEA | NODO: 026_CO</div>
+            <button onclick="cerrarSesion()" style="background:transparent; border:1px solid red; color:red; cursor:pointer; padding:5px;">LOGOUT</button>
+        </header>
+
+        <aside>
+            <h4 style="border-bottom: 1px solid #333; padding-bottom: 10px;">MÓDULOS</h4>
+            <nav>
+                <p style="cursor:pointer" onclick="cambiarTab('db')">💾 Base de Datos</p>
+                <p style="cursor:pointer" onclick="cambiarTab('net')">🌐 Red y Tráfico</p>
+                <p style="cursor:pointer" onclick="cambiarTab('set')">⚙️ Configuración</p>
+            </nav>
+        </aside>
+
+        <main id="content-area">
+            <section id="tab-db">
+                <h3>CONTROL DE USUARIOS EN SUPABASE</h3>
+                <div style="display: flex; gap: 20px;">
+                    <div class="card-stat" style="flex: 1;">
+                        <h4>Añadir Usuario</h4>
+                        <input type="text" id="newU" placeholder="Nombre" style="margin-bottom:10px">
+                        <input type="text" id="newP" placeholder="Contraseña" style="margin-bottom:10px">
+                        <button class="btn" onclick="crearUsuario()">Insertar en DB</button>
+                    </div>
+                    <div class="card-stat" style="flex: 2;">
+                        <h4>Registros Actuales</h4>
+                        <button class="btn" style="width:auto; font-size:10px;" onclick="cargarTabla()">Refrescar Tabla</button>
+                        <table id="userTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>USUARIO</th>
+                                    <th>CLAVE</th>
+                                    <th>ACCIÓN</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer id="console-terminal">
+            <div>[SYS] Inicializando consola de depuración...</div>
+        </footer>
     </div>
 
     <script>
-        // CONFIGURACIÓN EXTRAÍDA DE TU CAPTURA
-        const PROJECT_URL = "https://cmqgzwgqvpxuzmivxjcp.supabase.co";
-        const PROJECT_KEY = "sb_publishable_jM1_oVJyaoB_03tMbw9m8w_69_ODcVr";
+        // --- CONFIGURACIÓN CRÍTICA ---
+        const SB_URL = "https://cmqgzwgqvpxuzmivxjcp.supabase.co";
+        const SB_KEY = "sb_publishable_jM1_oVJyaoB_03tMbw9m8w_69_ODcVr";
+        
+        const db = supabase.createClient(SB_URL, SB_KEY);
+        const terminal = document.getElementById('console-terminal');
 
-        let supabaseClient;
-        const log = document.getElementById('terminal-out');
+        function log(msg, color = "#00ff00") {
+            const time = new Date().toLocaleTimeString();
+            terminal.innerHTML += `<div style="color:${color}">[${time}] ${msg}</div>`;
+            terminal.scrollTop = terminal.scrollHeight;
+        }
 
-        // Inicialización al cargar la ventana
-        window.onload = () => {
+        // --- LÓGICA DE LOGIN ---
+        async function intentarLogin() {
+            const u = document.getElementById('logUser').value.trim().toLowerCase();
+            const p = document.getElementById('logPass').value.trim();
+            const msg = document.getElementById('login-msg');
+
+            log("Iniciando protocolo de autenticación...");
+
             try {
-                if (typeof supabase !== 'undefined') {
-                    supabaseClient = supabase.createClient(PROJECT_URL, PROJECT_KEY);
-                    log.innerHTML = ">> LIBRERÍA CARGADA.<br>>> SISTEMA LISTO PARA LOGIN.";
+                const { data, error } = await db.from('usuarios').select('*');
+                if (error) throw error;
+
+                const userMatch = data.find(f => f.username.toLowerCase() === u && f.password === p);
+
+                if (userMatch) {
+                    log("Acceso concedido para: " + u, "#fff");
+                    localStorage.setItem('sesion_activa', 'true');
+                    document.getElementById('login-screen').style.opacity = "0";
+                    setTimeout(() => {
+                        document.getElementById('login-screen').style.display = "none";
+                        document.getElementById('main-dashboard').style.display = "grid";
+                        cargarTabla();
+                    }, 1000);
                 } else {
-                    log.innerHTML = "<span class='error'>>> ERROR: No se detectó Supabase JS.</span>";
+                    msg.innerHTML = "ERROR: CREDENCIALES INVÁLIDAS";
+                    log("Fallo de autenticación: " + u, "red");
                 }
             } catch (e) {
-                log.innerHTML = "<span class='error'>>> FALLO: " + e.message + "</span>";
+                log("Error de conexión: " + e.message, "red");
             }
-        };
+        }
 
-        // Lógica de Validación
-        document.getElementById('btnConnect').onclick = async function() {
-            const uDigitado = document.getElementById('userInput').value.trim().toLowerCase();
-            const pDigitado = document.getElementById('passInput').value.trim();
+        // --- GESTIÓN DE TABLA ---
+        async function cargarTabla() {
+            log("Sincronizando tabla 'usuarios'...");
+            const body = document.getElementById('tableBody');
+            body.innerHTML = "<tr><td colspan='4'>Cargando...</td></tr>";
 
-            if (!supabaseClient) {
-                log.innerHTML = "<span class='error'>>> ERROR: Cliente no inicializado.</span>";
+            const { data, error } = await db.from('usuarios').select('*').order('id', { ascending: true });
+
+            if (error) {
+                log("Error al leer tabla: " + error.message, "red");
                 return;
             }
 
-            log.innerHTML = ">> Consultando nodo Supabase...";
+            body.innerHTML = "";
+            data.forEach(f => {
+                body.innerHTML += `
+                    <tr>
+                        <td>${f.id}</td>
+                        <td>${f.username}</td>
+                        <td>${f.password}</td>
+                        <td><button class="btn btn-danger" style="padding:2px 10px" onclick="eliminarUsuario(${f.id})">BORRAR</button></td>
+                    </tr>
+                `;
+            });
+            log("Sincronización completa. Registros: " + data.length);
+        }
 
-            try {
-                // Traemos los datos de la tabla 'usuarios'
-                const { data, error } = await supabaseClient.from('usuarios').select('*');
+        async function crearUsuario() {
+            const user = document.getElementById('newU').value.trim();
+            const pass = document.getElementById('newP').value.trim();
 
-                if (error) {
-                    log.innerHTML = "<span class='error'>>> ERROR DB: " + error.message + "</span>";
-                    return;
-                }
+            if (!user || !pass) return log("Faltan datos para crear usuario", "yellow");
 
-                log.innerHTML = ">> Analizando registros recibidos: " + data.length + "...<br>";
+            log(`Insertando nuevo registro: ${user}...`);
+            const { error } = await db.from('usuarios').insert([{ username: user, password: pass }]);
 
-                let loginExitoso = false;
-
-                data.forEach(fila => {
-                    const uDB = String(fila.username).trim().toLowerCase();
-                    const pDB = String(fila.password).trim();
-
-                    if (uDB === uDigitado && pDB === pDigitado) {
-                        loginExitoso = true;
-                    }
-                });
-
-                if (loginExitoso) {
-                    log.innerHTML += "<span class='success'>>> ACCESO CONCEDIDO. REDIRIGIENDO...</span>";
-                    setTimeout(() => {
-                        alert("¡CONECTADO CON ÉXITO!");
-                        // Aquí podrías poner: window.location.href = "dashboard.html";
-                    }, 600);
-                } else {
-                    log.innerHTML += "<span class='error'>>> CREDENCIALES INVÁLIDAS.</span>";
-                }
-
-            } catch (err) {
-                log.innerHTML = "<span class='error'>>> ERROR CRÍTICO: " + err.message + "</span>";
+            if (error) {
+                log("Fallo al insertar: " + error.message, "red");
+            } else {
+                log("Usuario creado con éxito", "cyan");
+                cargarTabla();
             }
-        };
+        }
+
+        async function eliminarUsuario(id) {
+            if (!confirm("¿Seguro que quieres borrar el ID " + id + "?")) return;
+            
+            log(`Eliminando ID: ${id}...`);
+            const { error } = await db.from('usuarios').delete().eq('id', id);
+
+            if (error) {
+                log("Fallo al borrar: " + error.message, "red");
+            } else {
+                log("Registro eliminado", "yellow");
+                cargarTabla();
+            }
+        }
+
+        function cerrarSesion() {
+            localStorage.removeItem('sesion_activa');
+            location.reload();
+        }
+
+        // Persistencia
+        if (localStorage.getItem('sesion_activa') === 'true') {
+            document.getElementById('login-screen').style.display = "none";
+            document.getElementById('main-dashboard').style.display = "grid";
+            cargarTabla();
+        }
+
     </script>
 </body>
 </html>
