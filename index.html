@@ -1,14 +1,33 @@
-async function verDatosReales() {
-    const { data, error } = await db.from('usuarios').select('*');
+async function ejecutarDiagnostico() {
+    out.innerHTML = "<b>ESCANEO DE FUERZA BRUTA...</b>";
     
-    if (data) {
-        console.log("--- DATOS ENCONTRADOS EN LA DB ---");
-        data.forEach(fila => {
-            // Usamos comillas para ver si hay espacios invisibles
-            console.log(`Usuario: "${fila.username}" | Clave: "${fila.password}"`);
-            
-            // Esto aparecerá en tu terminal de la página
-            print(`En DB hay: USER["${fila.username}"] PASS["${fila.password}"]`);
-        });
+    // 1. Traemos TODO lo que hay en la tabla sin filtros
+    const { data, error } = await db.from('usuarios').select('*');
+
+    if (error) {
+        print(`ERROR: ${error.message}`, true);
+        return;
     }
+
+    if (!data || data.length === 0) {
+        print("LA TABLA ESTÁ VACÍA. No hay filas en Supabase.", true);
+        return;
+    }
+
+    print(`Se encontraron ${data.length} registros. Analizando...`);
+
+    data.forEach(fila => {
+        // Usamos comillas dobles para detectar espacios al final
+        print(`ENCONTRADO -> Usuario: "${fila.username}" | Clave: "${fila.password}"`);
+        
+        // Comparación manual para decirte por qué falla
+        const userDigitado = document.getElementById('userInput').value;
+        const passDigitado = document.getElementById('passInput').value;
+
+        if (fila.username === userDigitado && fila.password === passDigitado) {
+            print("ESTE REGISTRO COINCIDE PERFECTAMENTE.", false);
+        } else {
+            print("Este registro NO coincide con lo que escribiste arriba.", true);
+        }
+    });
 }
