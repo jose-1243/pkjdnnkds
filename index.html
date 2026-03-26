@@ -2,82 +2,77 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>SISTEMA OPERATIVO | SERGIO</title>
+    <title>SISTEMA SERGIO | VERIFICACIÓN FORZADA</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background: #050505; color: #00ff00; font-family: monospace; padding: 20px; }
-        .panel { border: 1px solid #00ff00; padding: 20px; max-width: 400px; margin: auto; }
-        input { background: #000; border: 1px solid #00ff00; color: #00ff00; padding: 10px; width: 100%; margin-bottom: 10px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background: #00ff00; border: none; font-weight: bold; cursor: pointer; }
-        #terminal { margin-top: 20px; font-size: 12px; color: #00cc00; border-top: 1px solid #333; padding-top: 10px; }
+        body { background: #0a0a0a; color: #00ff00; font-family: 'Courier New', monospace; padding: 40px; }
+        .login-box { border: 2px solid #00ff00; padding: 30px; max-width: 400px; margin: auto; background: #000; box-shadow: 0 0 20px #00ff0044; }
+        input { background: #111; border: 1px solid #00ff00; color: #00ff00; width: 100%; padding: 12px; margin: 10px 0; outline: none; }
+        button { width: 100%; padding: 15px; background: #00ff00; color: #000; font-weight: bold; border: none; cursor: pointer; text-transform: uppercase; }
+        button:hover { background: #00cc00; }
+        #monitor { margin-top: 20px; font-size: 12px; border-top: 1px solid #222; padding-top: 10px; }
+        .match { color: #00ff00; font-weight: bold; }
+        .fail { color: #ff3333; }
     </style>
 </head>
 <body>
 
-    <div class="panel">
-        <h3 style="text-align: center;">ACCESO RESTRINGIDO</h3>
-        <input type="text" id="u" placeholder="USUARIO (admin)">
-        <input type="password" id="p" placeholder="CLAVE (password123)">
-        <button onclick="validar()">ENTRAR AL SISTEMA</button>
-        
-        <div id="terminal">>> Esperando autenticación...</div>
-    </div>
+<div class="login-box">
+    <h2 style="text-align: center; letter-spacing: 2px;">SECURITY CHECK</h2>
+    <input type="text" id="campoUser" placeholder="USUARIO">
+    <input type="password" id="campoPass" placeholder="CONTRASEÑA">
+    <button onclick="verificarAhora()">Sincronizar Acceso</button>
+    
+    <div id="monitor">>> Terminal lista para escaneo...</div>
+</div>
 
-    <script>
-        // 1. Inicialización limpia (evita el error de "already declared")
-        const SB_URL = "https://cmqgzwgqvpxuzmivxjcp.supabase.co".trim();
-        const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtcWd6d2dxdnB4dXptaXZ4amNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NDk0NzQsImV4cCI6MjA5MDEyNTQ3NH0.yxukU3-y26DNLdCfEymPNgUSGmHorhuQNPng_fEkWOo".trim();
-        
-        const db = supabase.createClient(SB_URL, SB_KEY);
-        const log = document.getElementById('terminal');
+<script>
+    // Usamos nombres ÚNICOS para que no haya error de "already declared"
+    const CONFIG_URL = "https://cmqgzwgqvpxuzmivxjcp.supabase.co".trim();
+    const CONFIG_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtcWd6d2dxdnB4dXptaXZ4amNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NDk0NzQsImV4cCI6MjA5MDEyNTQ3NH0.yxukU3-y26DNLdCfEymPNgUSGmHorhuQNPng_fEkWOo".trim();
+    
+    // Cambiamos el nombre de la variable de 'supabase' a 'instanciaDB'
+    const instanciaDB = supabase.createClient(CONFIG_URL, CONFIG_KEY);
 
-        async function validar() {
-            const user = document.getElementById('u').value.trim();
-            const pass = document.getElementById('p').value.trim();
+    async function verificarAhora() {
+        const palla = document.getElementById('monitor');
+        const uDigitado = document.getElementById('campoUser').value.trim();
+        const pDigitado = document.getElementById('campoPass').value.trim();
 
-            log.innerHTML = ">> Verificando en base de datos...";
+        palla.innerHTML = "Consultando base de datos...";
 
-            try {
-                // Consulta exacta a tu tabla de la foto
-                const { data, error } = await db
-                    .from('usuarios')
-                    .select('*')
-                    .eq('username', user)
-                    .eq('password', pass);
+        try {
+            // Traemos los datos de tu tabla 'usuarios'
+            const { data, error } = await instanciaDB.from('usuarios').select('*');
 
-                if (error) {
-                    log.innerHTML = ">> ERROR: " + error.message;
-                    return;
-                }
+            if (error) throw error;
 
-                if (data && data.length > 0) {
-                    log.innerHTML = "<span style='color:white'>>> ACCESO CONCEDIDO. Bienvenido " + data[0].username + "</span>";
-                    alert("¡LOGIN CORRECTO!");
+            palla.innerHTML = ""; // Limpiar pantalla
+
+            let exito = false;
+
+            data.forEach(fila => {
+                // Comprobamos cada fila de tu tabla
+                const uDB = fila.username.trim();
+                const pDB = fila.password.trim();
+
+                if (uDB === uDigitado && pDB === pDigitado) {
+                    exito = true;
+                    palla.innerHTML += `<div class="match">>> COINCIDENCIA ENCONTRADA: Bienvenido ${uDB}</div>`;
                 } else {
-                    log.innerHTML = "<span style='color:red'>>> ERROR: Datos no encontrados en la tabla.</span>";
-                    console.log("Intento con:", user, pass);
+                    palla.innerHTML += `<div class="fail">>> No coincide con: "${uDB}" / "${pDB}"</div>`;
                 }
-            } catch (err) {
-                log.innerHTML = ">> ERROR CRÍTICO: " + err.message;
+            });
+
+            if (exito) {
+                setTimeout(() => { alert("¡ACCESO CONCEDIDO!"); }, 500);
             }
+
+        } catch (err) {
+            palla.innerHTML = `<div class="fail">ERROR TÉCNICO: ${err.message}</div>`;
         }
-    </script>
+    }
+</script>
+
 </body>
 </html>
-    print(`Se encontraron ${data.length} registros. Analizando...`);
-
-    data.forEach(fila => {
-        // Usamos comillas dobles para detectar espacios al final
-        print(`ENCONTRADO -> Usuario: "${fila.username}" | Clave: "${fila.password}"`);
-        
-        // Comparación manual para decirte por qué falla
-        const userDigitado = document.getElementById('userInput').value;
-        const passDigitado = document.getElementById('passInput').value;
-
-        if (fila.username === userDigitado && fila.password === passDigitado) {
-            print("ESTE REGISTRO COINCIDE PERFECTAMENTE.", false);
-        } else {
-            print("Este registro NO coincide con lo que escribiste arriba.", true);
-        }
-    });
-}
