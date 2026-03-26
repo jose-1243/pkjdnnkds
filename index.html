@@ -2,496 +2,92 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA DE CONTROL CENTRAL | RESTRINGIDO</title>
-    
+    <title>DEBUGGER SUPABASE</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
-        /* =========================================
-           CONFIGURACIÓN DE VARIABLES Y TEMAS
-           ========================================= */
-        :root {
-            --neon-cyan: #00f2fe;
-            --neon-blue: #4facfe;
-            --bg-darker: #020408;
-            --bg-card: rgba(10, 15, 25, 0.9);
-            --danger: #ff3e3e;
-            --success: #00ff88;
-            --text-primary: #f0f6fc;
-            --text-secondary: #8b949e;
-            --border-glow: rgba(0, 242, 254, 0.3);
-            --font-tech: 'Courier New', Courier, monospace;
-        }
-
-        /* RESET GENERAL */
-        * { box-sizing: border-box; margin: 0; padding: 0; cursor: default; }
-        body, html { 
-            height: 100%; 
-            background-color: var(--bg-darker); 
-            color: var(--text-primary);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            overflow: hidden;
-        }
-
-        /* =========================================
-           FONDO DINÁMICO DE PARTÍCULAS (CANVAS)
-           ========================================= */
-        #particle-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-        }
-
-        .grid-layer {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                linear-gradient(var(--border-glow) 1px, transparent 1px),
-                linear-gradient(90deg, var(--border-glow) 1px, transparent 1px);
-            background-size: 40px 40px;
-            opacity: 0.1;
-            z-index: -1;
-        }
-
-        /* =========================================
-           ESTILOS DE LA PANTALLA DE CARGA
-           ========================================= */
-        #preloader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--bg-darker);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            transition: opacity 1s ease;
-        }
-
-        .loader-ring {
-            width: 80px;
-            height: 80px;
-            border: 4px solid rgba(0, 242, 254, 0.1);
-            border-top: 4px solid var(--neon-cyan);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* =========================================
-           CONTENEDOR DE LOGIN (CYBER CARD)
-           ========================================= */
-        .app-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            perspective: 1000px;
-        }
-
-        .cyber-card {
-            width: 420px;
-            background: var(--bg-card);
-            border: 1px solid var(--border-glow);
-            border-radius: 4px;
-            padding: 40px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 0 50px rgba(0,0,0,0.8);
-            position: relative;
-            animation: cardEntry 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @keyframes cardEntry {
-            from { opacity: 0; transform: translateZ(-100px) rotateX(20deg); }
-            to { opacity: 1; transform: translateZ(0) rotateX(0); }
-        }
-
-        /* DECORACIONES DE ESQUINAS */
-        .corner-tag {
-            position: absolute;
-            width: 15px;
-            height: 15px;
-            border: 2px solid var(--neon-cyan);
-        }
-        .tl { top: -2px; left: -2px; border-right: 0; border-bottom: 0; }
-        .tr { top: -2px; right: -2px; border-left: 0; border-bottom: 0; }
-        .bl { bottom: -2px; left: -2px; border-right: 0; border-top: 0; }
-        .br { bottom: -2px; right: -2px; border-left: 0; border-top: 0; }
-
-        /* CABECERA */
-        .card-header {
-            text-align: left;
-            margin-bottom: 35px;
-            border-left: 3px solid var(--neon-cyan);
-            padding-left: 15px;
-        }
-
-        .card-header h1 {
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            color: var(--neon-cyan);
-            margin-bottom: 8px;
-        }
-
-        .card-header h2 {
-            font-size: 22px;
-            font-weight: 300;
-            letter-spacing: 1px;
-        }
-
-        /* FORMULARIO */
-        .field-group {
-            position: relative;
-            margin-bottom: 30px;
-        }
-
-        .field-group i {
-            position: absolute;
-            left: 12px;
-            top: 14px;
-            color: var(--neon-cyan);
-            font-size: 14px;
-        }
-
-        .field-group input {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 12px 12px 12px 40px;
-            color: white;
-            font-size: 15px;
-            border-radius: 4px;
-            outline: none;
-            transition: 0.3s;
-        }
-
-        .field-group input:focus {
-            border-color: var(--neon-cyan);
-            background: rgba(0, 242, 254, 0.05);
-            box-shadow: 0 0 10px rgba(0, 242, 254, 0.1);
-        }
-
-        .field-group label {
-            position: absolute;
-            left: 40px;
-            top: 12px;
-            color: var(--text-secondary);
-            pointer-events: none;
-            transition: 0.3s;
-            font-size: 14px;
-        }
-
-        .field-group input:focus ~ label,
-        .field-group input:not(:placeholder-shown) ~ label {
-            top: -22px;
-            left: 0;
-            font-size: 11px;
-            color: var(--neon-cyan);
-        }
-
-        /* BOTONES */
-        .action-area {
-            margin-top: 20px;
-        }
-
-        .btn-glitch {
-            width: 100%;
-            padding: 15px;
-            background: transparent;
-            border: 1px solid var(--neon-cyan);
-            color: var(--neon-cyan);
-            font-size: 13px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            cursor: pointer;
-            position: relative;
-            transition: 0.3s;
-        }
-
-        .btn-glitch:hover {
-            background: var(--neon-cyan);
-            color: var(--bg-darker);
-            box-shadow: 0 0 25px rgba(0, 242, 254, 0.5);
-        }
-
-        /* TERMINAL DE ESTADO */
-        .status-console {
-            margin-top: 30px;
-            background: rgba(0,0,0,0.5);
-            height: 100px;
-            border: 1px solid rgba(255,255,255,0.05);
-            padding: 10px;
-            font-family: var(--font-tech);
-            font-size: 10px;
-            color: var(--text-secondary);
-            overflow-y: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-        }
-
-        .console-line {
-            display: block;
-            margin-bottom: 2px;
-            animation: typeIn 0.2s ease-out;
-        }
-
-        .console-line::before { content: ">> "; color: var(--neon-cyan); }
-
-        @keyframes typeIn { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: translateX(0); } }
-
-        /* =========================================
-           DASHBOARD DE ÉXITO (MODAL)
-           ========================================= */
-        #main-dashboard {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--bg-darker);
-            z-index: 500;
-            padding: 50px;
-            animation: fadeIn 1s forwards;
-        }
-
-        .stats-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 25px;
-            margin-top: 50px;
-        }
-
-        .stat-box {
-            background: var(--bg-card);
-            border: 1px solid rgba(0, 242, 254, 0.1);
-            padding: 30px;
-            text-align: center;
-        }
-
-        .stat-box h3 { font-size: 12px; color: var(--neon-cyan); margin-bottom: 10px; }
-        .stat-box p { font-size: 24px; font-weight: 300; }
-
+        body { background: #000; color: #0f0; font-family: monospace; padding: 20px; }
+        .input-area { border: 1px solid #0f0; padding: 20px; margin-bottom: 20px; }
+        input { background: #000; border: 1px solid #0f0; color: #0f0; padding: 5px; }
+        button { background: #0f0; color: #000; border: none; padding: 10px; cursor: pointer; font-weight: bold; }
+        #console { white-space: pre-wrap; border-top: 1px solid #444; margin-top: 20px; padding-top: 10px; color: #0ff; }
+        .err { color: #f00; font-weight: bold; }
+        .ok { color: #0f0; }
     </style>
 </head>
 <body>
 
-    <canvas id="particle-canvas"></canvas>
-    <div class="grid-layer"></div>
-
-    <div id="preloader">
-        <div class="loader-ring"></div>
-        <p style="margin-top: 20px; color: var(--neon-cyan); letter-spacing: 5px; font-size: 10px;">INICIALIZANDO NÚCLEO</p>
+    <div class="input-area">
+        [ LOGIN DE PRUEBA ]<br><br>
+        USUARIO: <input type="text" id="u" autocomplete="off"><br><br>
+        CLAVE:   <input type="password" id="p"><br><br>
+        <button onclick="runDebug()">EJECUTAR DIAGNÓSTICO FORZADO</button>
     </div>
 
-    <div class="app-container">
-        
-        <div class="cyber-card" id="login-box">
-            <div class="corner-tag tl"></div><div class="corner-tag tr"></div>
-            <div class="corner-tag bl"></div><div class="corner-tag br"></div>
-
-            <div class="card-header">
-                <h1>Secure Node 01</h1>
-                <h2>Identificación</h2>
-            </div>
-
-            <div class="field-group">
-                <i class="fa-solid fa-id-badge"></i>
-                <input type="text" id="node-user" placeholder=" " required>
-                <label>Usuario del Sistema</label>
-            </div>
-
-            <div class="field-group">
-                <i class="fa-solid fa-fingerprint"></i>
-                <input type="password" id="node-pass" placeholder=" " required>
-                <label>Código de Enlace</label>
-            </div>
-
-            <div class="action-area">
-                <button class="btn-glitch" id="trigger-auth">
-                    Sincronizar Acceso
-                </button>
-            </div>
-
-            <div class="status-console" id="console-out">
-                <span class="console-line">Terminal lista...</span>
-            </div>
-        </div>
-
-        <div id="main-dashboard">
-            <div class="card-header">
-                <h1>Operativo</h1>
-                <h2 id="welcome-txt">Bienvenido, Operador</h2>
-            </div>
-            
-            <div class="stats-container">
-                <div class="stat-box">
-                    <h3>ESTADO DB</h3>
-                    <p style="color: var(--success)">ONLINE</p>
-                </div>
-                <div class="stat-box">
-                    <h3>ENCRIPTACIÓN</h3>
-                    <p>AES-256</p>
-                </div>
-                <div class="stat-box">
-                    <h3>IP ORIGEN</h3>
-                    <p id="ip-addr">0.0.0.0</p>
-                </div>
-            </div>
-
-            <button class="btn-glitch" style="width: 200px; margin-top: 50px;" onclick="location.reload()">
-                Desconectar
-            </button>
-        </div>
-
-    </div>
+    <div id="console">>> Esperando ejecución...</div>
 
     <script>
-        // 1. CONFIGURACIÓN SUPABASE (Tus credenciales reales)
-        const SUPABASE_URL = "https://cmqgzwgqvpxuzmivxjcp.supabase.co";
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtcWd6d2dxdnB4dXptaXZ4amNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NDk0NzQsImV4cCI6MjA5MDEyNTQ3NH0.yxukU3-y26DNLdCfEymPNgUSGmHorhuQNPng_fEkWOo";
-        
-        // Inicializamos el cliente una sola vez
-        const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const URL = "https://cmqgzwgqvpxuzmivxjcp.supabase.co";
+        const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtcWd6d2dxdnB4dXptaXZ4amNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NDk0NzQsImV4cCI6MjA5MDEyNTQ3NH0.yxukU3-y26DNLdCfEymPNgUSGmHorhuQNPng_fEkWOo";
+        const supabaseClient = supabase.createClient(URL, KEY);
 
-        // 2. MOTOR DE PARTÍCULAS
-        const canvas = document.getElementById('particle-canvas');
-        const ctx = canvas.getContext('2d');
-        let particles = [];
-
-        function initCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+        async function print(msg, type = '') {
+            const c = document.getElementById('console');
+            const span = document.createElement('div');
+            span.className = type;
+            span.innerHTML = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            c.appendChild(span);
         }
 
-        class Particle {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.size = Math.random() * 2;
-                this.speedX = Math.random() * 1 - 0.5;
-                this.speedY = Math.random() * 1 - 0.5;
-            }
-            update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
-                if(this.x > canvas.width) this.x = 0;
-                if(this.x < 0) this.x = canvas.width;
-                if(this.y > canvas.height) this.y = 0;
-                if(this.y < 0) this.y = canvas.height;
-            }
-            draw() {
-                ctx.fillStyle = 'rgba(0, 242, 254, 0.3)';
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
+        async function runDebug() {
+            const userVal = document.getElementById('u').value;
+            const passVal = document.getElementById('p').value;
+            document.getElementById('console').innerHTML = ""; // Limpiar
 
-        function createParticles() {
-            for(let i=0; i<80; i++) particles.push(new Particle());
-        }
+            print("--- INICIANDO ESCANEO DE ERRORES ---");
 
-        function animateParticles() {
-            ctx.clearRect(0,0, canvas.width, canvas.height);
-            particles.forEach(p => { p.update(); p.draw(); });
-            requestAnimationFrame(animateParticles);
-        }
+            // PASO 1: Probar conexión básica
+            print("Paso 1: Verificando tabla 'usuarios'...");
+            const { data: testData, error: testErr } = await supabaseClient
+                .from('usuarios')
+                .select('*')
+                .limit(1);
 
-        // 3. TERMINAL LOGS
-        function pushLog(text, isError = false) {
-            const consoleBox = document.getElementById('console-out');
-            const line = document.createElement('span');
-            line.className = 'console-line';
-            line.innerText = text;
-            if(isError) line.style.color = 'var(--danger)';
-            consoleBox.appendChild(line);
-            if(consoleBox.childNodes.length > 6) consoleBox.removeChild(consoleBox.firstChild);
-        }
-
-        // 4. PROCESO DE AUTENTICACIÓN
-        document.getElementById('trigger-auth').addEventListener('click', async () => {
-            const userVal = document.getElementById('node-user').value;
-            const passVal = document.getElementById('node-pass').value;
-            const btn = document.getElementById('trigger-auth');
-
-            if(!userVal || !passVal) {
-                pushLog("ERROR: Credenciales nulas.", true);
+            if (testErr) {
+                print(`ERROR CRÍTICO: ${testErr.message}`, 'err');
+                print(`CÓDIGO ERROR: ${testErr.code}`, 'err');
+                print(`PISTA: Si el código es '42P01', la tabla 'usuarios' NO EXISTE.`, 'err');
+                print(`PISTA: Si el código es '42501', el RLS está ACTIVADO y bloquea la lectura.`, 'err');
                 return;
             }
+            print("Paso 1 OK: Tabla encontrada.", 'ok');
 
-            // UI Feedback
-            btn.disabled = true;
-            btn.innerText = "Sincronizando...";
-            pushLog("Enviando petición a nodo Supabase...");
-
-            try {
-                const { data, error } = await sbClient
-                    .from('usuarios')
-                    .select('*')
-                    .eq('username', userVal)
-                    .eq('password', passVal);
-
-                if (error) throw error;
-
-                // Simulación de carga de datos pesados
-                await new Promise(r => setTimeout(r, 1200));
-
-                if (data && data.length > 0) {
-                    pushLog("HANDSHAKE COMPLETADO.");
-                    pushLog("Iniciando entorno gráfico...");
-                    setTimeout(() => unlockSystem(data[0].username), 1000);
-                } else {
-                    pushLog("ERROR: Acceso Denegado.", true);
-                    btn.disabled = false;
-                    btn.innerText = "Reintentar enlace";
+            // PASO 2: Ver columnas
+            if (testData.length > 0) {
+                const cols = Object.keys(testData[0]);
+                print(`Columnas detectadas: ${cols.join(", ")}`);
+                if (!cols.includes('username') || !cols.includes('password')) {
+                    print("AVISO: Las columnas no se llaman 'username' o 'password'. Revisa tu SQL.", 'err');
                 }
-            } catch (err) {
-                pushLog("CRITICAL: Fallo de red.", true);
-                btn.disabled = false;
+            } else {
+                print("AVISO: La tabla está VACÍA. Inserta un usuario en Supabase.", 'err');
             }
-        });
 
-        function unlockSystem(username) {
-            document.getElementById('login-box').style.display = 'none';
-            document.getElementById('main-dashboard').style.display = 'block';
-            document.getElementById('welcome-txt').innerText = "BIENVENIDO, OPERADOR " + username.toUpperCase();
-            
-            // Detectar IP para el dashboard real
-            fetch('https://api.ipify.org?format=json')
-                .then(r => r.json())
-                .then(d => document.getElementById('ip-addr').innerText = d.ip);
+            // PASO 3: Intento de Login
+            print(`Paso 3: Buscando usuario: "${userVal}" con clave: "${passVal}"...`);
+            const { data: loginData, error: loginErr } = await supabaseClient
+                .from('usuarios')
+                .select('*')
+                .eq('username', userVal)
+                .eq('password', passVal);
+
+            if (loginData && loginData.length > 0) {
+                print("¡ÉXITO! Usuario encontrado.", 'ok');
+                print(`ID del usuario: ${loginData[0].id}`, 'ok');
+            } else {
+                print("FALLO: La consulta no devolvió ninguna fila.", 'err');
+                print("CAUSA POSIBLE: Usuario o clave mal escritos (revisa mayúsculas/espacios).", 'err');
+            }
         }
-
-        // 5. INICIALIZACIÓN
-        window.onload = () => {
-            initCanvas();
-            createParticles();
-            animateParticles();
-            
-            // Quitar preloader después de 2 segundos
-            setTimeout(() => {
-                document.getElementById('preloader').style.opacity = '0';
-                setTimeout(() => document.getElementById('preloader').remove(), 1000);
-            }, 2000);
-        };
-
-        window.onresize = initCanvas;
     </script>
 </body>
 </html>
