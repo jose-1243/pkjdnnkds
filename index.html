@@ -1,5 +1,37 @@
-// NUEVAS CREDENCIALES SEGÚN TU IMAGEN
-const URL_DB = "https://cmqgzwgqvpxuzmivxjcp.supabase.co".trim();
-const KEY_DB = "sb_publishable_jM1_oVJyaoB_03tMbw9m8w_69_ODcVr".trim();
+<script>
+    const URL_DB = "https://cmqgzwgqvpxuzmivxjcp.supabase.co";
+    const KEY_DB = "sb_publishable_jM1_oVJyaoB_03tMbw9m8w_69_ODcVr"; // La de tu foto
+    
+    const client = supabase.createClient(URL_DB, KEY_DB);
 
-const client = supabase.createClient(URL_DB, KEY_DB);
+    async function validarAcceso() {
+        const u = document.getElementById('u').value.trim();
+        const p = document.getElementById('p').value.trim();
+        const mon = document.getElementById('monitor');
+
+        mon.innerHTML = ">> Conectando con llave Publishable...";
+
+        try {
+            const { data, error } = await client.from('usuarios').select('*');
+
+            if (error) {
+                mon.innerHTML = ">> ERROR DE LLAVE: " + error.message;
+                return;
+            }
+
+            let exito = false;
+            data.forEach(fila => {
+                if (fila.username === u && fila.password === p) exito = true;
+            });
+
+            if (exito) {
+                alert("¡CONECTADO!");
+                mon.innerHTML = ">> ACCESO CORRECTO.";
+            } else {
+                mon.innerHTML = ">> DATOS INCORRECTOS. (¿Probaste con x / x?)";
+            }
+        } catch (e) {
+            mon.innerHTML = ">> ERROR: " + e.message;
+        }
+    }
+</script>
