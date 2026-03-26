@@ -1,37 +1,105 @@
-<script>
-    const URL_DB = "https://cmqgzwgqvpxuzmivxjcp.supabase.co";
-    const KEY_DB = "sb_publishable_jM1_oVJyaoB_03tMbw9m8w_69_ODcVr"; // La de tu foto
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SISTEMA OPERATIVO | ACCESO SEGURO</title>
     
-    const client = supabase.createClient(URL_DB, KEY_DB);
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    async function validarAcceso() {
-        const u = document.getElementById('u').value.trim();
-        const p = document.getElementById('p').value.trim();
-        const mon = document.getElementById('monitor');
+    <style>
+        body { background: #000; color: #00ff00; font-family: 'Courier New', monospace; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-card { border: 2px solid #00ff00; padding: 30px; background: #050505; box-shadow: 0 0 15px #00ff0055; width: 320px; }
+        h2 { text-align: center; font-size: 1.2rem; margin-bottom: 20px; border-bottom: 1px solid #00ff00; padding-bottom: 10px; }
+        input { background: #000; border: 1px solid #00ff00; color: #00ff00; width: 100%; padding: 12px; margin-bottom: 15px; box-sizing: border-box; outline: none; }
+        button { width: 100%; padding: 12px; background: #00ff00; color: #000; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #fff; color: #000; }
+        #terminal-out { margin-top: 20px; font-size: 11px; color: #00cc00; height: 80px; overflow-y: auto; border-top: 1px solid #222; padding-top: 10px; }
+        .error { color: #ff3333; }
+        .success { color: #ffffff; font-weight: bold; }
+    </style>
+</head>
+<body>
 
-        mon.innerHTML = ">> Conectando con llave Publishable...";
+    <div class="login-card">
+        <h2>CORE_ACCESS v4.0</h2>
+        <input type="text" id="userInput" placeholder="USUARIO (admin / x)" autocomplete="off">
+        <input type="password" id="passInput" placeholder="CONTRASEÑA (x)">
+        <button id="btnConnect">EJECUTAR SYNC</button>
+        
+        <div id="terminal-out">>> Esperando inicialización...</div>
+    </div>
 
-        try {
-            const { data, error } = await client.from('usuarios').select('*');
+    <script>
+        // CONFIGURACIÓN EXTRAÍDA DE TU CAPTURA
+        const PROJECT_URL = "https://cmqgzwgqvpxuzmivxjcp.supabase.co";
+        const PROJECT_KEY = "sb_publishable_jM1_oVJyaoB_03tMbw9m8w_69_ODcVr";
 
-            if (error) {
-                mon.innerHTML = ">> ERROR DE LLAVE: " + error.message;
+        let supabaseClient;
+        const log = document.getElementById('terminal-out');
+
+        // Inicialización al cargar la ventana
+        window.onload = () => {
+            try {
+                if (typeof supabase !== 'undefined') {
+                    supabaseClient = supabase.createClient(PROJECT_URL, PROJECT_KEY);
+                    log.innerHTML = ">> LIBRERÍA CARGADA.<br>>> SISTEMA LISTO PARA LOGIN.";
+                } else {
+                    log.innerHTML = "<span class='error'>>> ERROR: No se detectó Supabase JS.</span>";
+                }
+            } catch (e) {
+                log.innerHTML = "<span class='error'>>> FALLO: " + e.message + "</span>";
+            }
+        };
+
+        // Lógica de Validación
+        document.getElementById('btnConnect').onclick = async function() {
+            const uDigitado = document.getElementById('userInput').value.trim().toLowerCase();
+            const pDigitado = document.getElementById('passInput').value.trim();
+
+            if (!supabaseClient) {
+                log.innerHTML = "<span class='error'>>> ERROR: Cliente no inicializado.</span>";
                 return;
             }
 
-            let exito = false;
-            data.forEach(fila => {
-                if (fila.username === u && fila.password === p) exito = true;
-            });
+            log.innerHTML = ">> Consultando nodo Supabase...";
 
-            if (exito) {
-                alert("¡CONECTADO!");
-                mon.innerHTML = ">> ACCESO CORRECTO.";
-            } else {
-                mon.innerHTML = ">> DATOS INCORRECTOS. (¿Probaste con x / x?)";
+            try {
+                // Traemos los datos de la tabla 'usuarios'
+                const { data, error } = await supabaseClient.from('usuarios').select('*');
+
+                if (error) {
+                    log.innerHTML = "<span class='error'>>> ERROR DB: " + error.message + "</span>";
+                    return;
+                }
+
+                log.innerHTML = ">> Analizando registros recibidos: " + data.length + "...<br>";
+
+                let loginExitoso = false;
+
+                data.forEach(fila => {
+                    const uDB = String(fila.username).trim().toLowerCase();
+                    const pDB = String(fila.password).trim();
+
+                    if (uDB === uDigitado && pDB === pDigitado) {
+                        loginExitoso = true;
+                    }
+                });
+
+                if (loginExitoso) {
+                    log.innerHTML += "<span class='success'>>> ACCESO CONCEDIDO. REDIRIGIENDO...</span>";
+                    setTimeout(() => {
+                        alert("¡CONECTADO CON ÉXITO!");
+                        // Aquí podrías poner: window.location.href = "dashboard.html";
+                    }, 600);
+                } else {
+                    log.innerHTML += "<span class='error'>>> CREDENCIALES INVÁLIDAS.</span>";
+                }
+
+            } catch (err) {
+                log.innerHTML = "<span class='error'>>> ERROR CRÍTICO: " + err.message + "</span>";
             }
-        } catch (e) {
-            mon.innerHTML = ">> ERROR: " + e.message;
-        }
-    }
-</script>
+        };
+    </script>
+</body>
+</html>
