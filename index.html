@@ -2,95 +2,90 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>DEBUGGER V3 | ERROR DE URL</title>
+    <title>SISTEMA DE DEPURACIÓN | ERROR 400</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background: #000; color: #0f0; font-family: monospace; padding: 20px; line-height: 1.5; }
-        .box { border: 1px dashed #0f0; padding: 15px; margin-bottom: 20px; }
-        input { background: #111; border: 1px solid #0f0; color: #0f0; padding: 8px; width: 200px; }
-        button { background: #0f0; color: #000; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; }
-        #console { border-top: 2px solid #333; margin-top: 20px; padding-top: 10px; }
-        .error-msg { color: #ff4444; background: rgba(255,0,0,0.1); padding: 5px; border-left: 3px solid red; margin: 5px 0; }
-        .ok-msg { color: #00ff88; }
+        body { background: #0a0a0a; color: #00ff00; font-family: 'Courier New', monospace; padding: 20px; }
+        .terminal { border: 1px solid #00ff00; padding: 20px; background: #000; min-height: 200px; box-shadow: 0 0 15px rgba(0,255,0,0.2); }
+        .error { color: #ff3333; font-weight: bold; border-left: 3px solid #ff3333; padding-left: 10px; margin: 10px 0; }
+        .success { color: #33ff33; }
+        input { background: #111; border: 1px solid #00ff00; color: #00ff00; padding: 8px; margin: 5px; width: 250px; }
+        button { background: #00ff00; color: #000; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        h3 { color: #00f2fe; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
-    <div class="box">
-        <h3>SISTEMA DE PRUEBA DE CONEXIÓN</h3>
-        USER: <input type="text" id="u" placeholder="user..."><br><br>
-        PASS: <input type="password" id="p" placeholder="pass..."><br><br>
-        <button onclick="runDebug()">INICIAR ESCANEO FORZADO</button>
+    <div class="terminal">
+        <h3>Escáner de Conectividad Supabase</h3>
+        <p>Introduce datos para forzar la consulta:</p>
+        <input type="text" id="userInput" placeholder="USUARIO">
+        <input type="password" id="passInput" placeholder="PASSWORD">
+        <br>
+        <button onclick="ejecutarDiagnostico()">FORZAR CONEXIÓN</button>
+        
+        <div id="output" style="margin-top: 20px; border-top: 1px solid #333; pt: 10px;">
+            >> Sistema listo para diagnóstico.
+        </div>
     </div>
 
-    <div id="console">>> Terminal de diagnóstico lista.</div>
-
     <script>
-        // URL Y KEY LIMPIAS (Sin espacios accidentales)
-        const URL_LIMPID = "https://cmqgzwgqvpxuzmivxjcp.supabase.co".trim();
-        const KEY_LIMPID = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtcWd6d2dxdnB4dXptaXZ4amNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NDk0NzQsImV4cCI6MjA5MDEyNTQ3NH0.yxukU3-y26DNLdCfEymPNgUSGmHorhuQNPng_fEkWOo".trim();
+        // --- CONFIGURACIÓN LIMPIA ---
+        // Usamos .trim() para eliminar cualquier espacio accidental al copiar
+        const URL_BASE = "https://cmqgzwgqvpxuzmivxjcp.supabase.co".trim();
+        const KEY_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtcWd6d2dxdnB4dXptaXZ4amNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NDk0NzQsImV4cCI6MjA5MDEyNTQ3NH0.yxukU3-y26DNLdCfEymPNgUSGmHorhuQNPng_fEkWOo".trim();
         
-        let client = null;
-
-        // Intentar inicializar con manejo de errores
-        try {
-            client = supabase.createClient(URL_LIMPID, KEY_LIMPID);
-            console.log("Cliente inicializado correctamente.");
-        } catch (e) {
-            document.getElementById('console').innerHTML = `<div class="error-msg">ERROR INICIAL: ${e.message}</div>`;
-        }
+        let db = null;
+        const out = document.getElementById('output');
 
         function print(msg, isError = false) {
-            const c = document.getElementById('console');
             const div = document.createElement('div');
-            div.className = isError ? "error-msg" : "ok-msg";
+            div.className = isError ? "error" : "success";
             div.innerHTML = `> ${msg}`;
-            c.appendChild(div);
+            out.appendChild(div);
         }
 
-        async function runDebug() {
-            if (!client) {
-                print("No se puede ejecutar: El cliente de Supabase no cargó por error de URL.", true);
+        // 1. Intentar inicializar el cliente al cargar la página
+        try {
+            db = supabase.createClient(URL_BASE, KEY_ANON);
+            print("CLIENTE: Inicializado correctamente.");
+        } catch (err) {
+            print(`FALLO CRÍTICO DE CONFIGURACIÓN: ${err.message}`, true);
+        }
+
+        async function ejecutarDiagnostico() {
+            out.innerHTML = "<b>Iniciando secuencia de rastreo...</b>";
+            
+            if (!db) {
+                print("ERROR: El cliente no existe. Revisa que la URL no tenga espacios.", true);
                 return;
             }
 
-            const user = document.getElementById('u').value;
-            const pass = document.getElementById('p').value;
-            document.getElementById('console').innerHTML = "<b>Iniciando secuencia...</b>";
+            const user = document.getElementById('userInput').value;
+            const pass = document.getElementById('passInput').value;
 
-            print("Verificando existencia de tabla 'usuarios'...");
+            print(`Probando consulta en tabla 'usuarios'...`);
 
-            // PASO 1: Probar si la tabla existe
-            const { data, error } = await client
-                .from('usuarios')
-                .select('*')
-                .limit(1);
-
-            if (error) {
-                print(`ERROR DETECTADO: ${error.message}`, true);
-                print(`CÓDIGO: ${error.code}`, true);
-                
-                if (error.code === "42P01") print("SUGERENCIA: La tabla 'usuarios' no existe en tu DB.");
-                if (error.code === "42501") print("SUGERENCIA: El RLS está bloqueando la lectura. Desactívalo en el SQL Editor.");
-                return;
-            }
-
-            print("Tabla detectada con éxito.", false);
-
-            // PASO 2: Login
-            print(`Buscando coincidencias para "${user}"...`);
-            const { data: logData, error: logErr } = await client
+            // PASO 2: Intentar leer la tabla para ver si el RLS o el nombre fallan
+            const { data, error } = await db
                 .from('usuarios')
                 .select('*')
                 .eq('username', user)
                 .eq('password', pass);
 
-            if (logData && logData.length > 0) {
-                print("¡ACCESO CONCEDIDO! Usuario verificado.", false);
-                print(`ID: ${logData[0].id} | User: ${logData[0].username}`);
+            if (error) {
+                print(`ERROR DE SERVIDOR: ${error.message}`, true);
+                print(`CÓDIGO: ${error.code}`, true);
+                
+                if(error.code === "PGRST116") print("Pista: La consulta no devolvió datos.");
+                if(error.code === "42P01") print("Pista: La tabla 'usuarios' no existe (revisa mayúsculas).");
+                return;
+            }
+
+            if (data && data.length > 0) {
+                print(`¡ÉXITO! Usuario '${data[0].username}' identificado con ID: ${data[0].id}`);
             } else {
-                print("ERROR: Credenciales no encontradas en la tabla.", true);
-                print("Revisa si escribiste bien el usuario o si hay espacios extras en Supabase.");
+                print("FALLO: Las credenciales no coinciden con ningún registro.", true);
             }
         }
     </script>
