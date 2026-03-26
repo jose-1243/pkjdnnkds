@@ -3,343 +3,388 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA OPERATIVO CENTRAL | SERGIO</title>
+    <title>TERMINAL CENTRAL | PROYECTO SERGIO</title>
     
-    <script src="https://cdn.npmmirror.com/package/@supabase/supabase-js/2.39.7/dist/umd/supabase.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         :root {
-            --neon: #00ff00;
-            --bg: #050505;
-            --dark-grey: #111;
-            --error: #ff3333;
+            --neon-green: #00ff41;
+            --dark-bg: #050505;
+            --panel-bg: #0d0d0d;
+            --border-color: #00ff41;
+            --error-red: #ff3131;
+            --warning-yellow: #ffcc00;
         }
 
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
-            background-color: var(--bg);
-            color: var(--neon);
-            font-family: 'Courier New', monospace;
-            margin: 0;
+            background-color: var(--dark-bg);
+            color: var(--neon-green);
+            font-family: 'Courier New', Courier, monospace;
+            height: 100vh;
             overflow: hidden;
             display: flex;
-            height: 100vh;
+            flex-direction: column;
         }
 
-        /* --- PANTALLA DE LOGIN --- */
-        #login-screen {
+        /* --- PANTALLA DE LOGIN (OVERLAY) --- */
+        #login-overlay {
             position: fixed;
             inset: 0;
-            background: var(--bg);
-            z-index: 999;
+            background: var(--dark-bg);
+            z-index: 1000;
             display: flex;
             justify-content: center;
             align-items: center;
-            transition: 1s;
+            transition: opacity 0.8s ease;
         }
 
-        .login-card {
-            border: 2px solid var(--neon);
+        .login-box {
+            width: 380px;
             padding: 40px;
-            width: 350px;
-            box-shadow: 0 0 20px rgba(0,255,0,0.2);
+            border: 2px solid var(--border-color);
             background: #000;
+            box-shadow: 0 0 25px rgba(0, 255, 65, 0.2);
+            text-align: center;
         }
 
-        /* --- PANEL PRINCIPAL (DASHBOARD) --- */
-        #main-dashboard {
-            display: none; /* Se activa al loguear */
+        .login-box h1 { font-size: 1.5rem; margin-bottom: 25px; letter-spacing: 3px; }
+
+        /* --- INPUTS Y BOTONES --- */
+        .field { margin-bottom: 20px; text-align: left; }
+        label { font-size: 10px; display: block; margin-bottom: 5px; opacity: 0.8; }
+        input {
             width: 100%;
-            height: 100%;
-            grid-template-columns: 250px 1fr;
-            grid-template-rows: 60px 1fr 200px;
+            padding: 12px;
+            background: #111;
+            border: 1px solid var(--border-color);
+            color: var(--neon-green);
+            outline: none;
+            font-family: inherit;
+        }
+
+        .btn-core {
+            width: 100%;
+            padding: 15px;
+            background: var(--neon-green);
+            color: #000;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: 0.3s;
+        }
+
+        .btn-core:hover { background: #fff; box-shadow: 0 0 15px #fff; }
+
+        /* --- ESTRUCTURA DEL DASHBOARD --- */
+        #admin-panel {
+            display: none; /* Se activa tras login */
+            flex: 1;
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            grid-template-rows: 60px 1fr 180px;
         }
 
         header {
             grid-column: 1 / 3;
-            border-bottom: 1px solid var(--neon);
+            background: #000;
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
-            padding: 0 20px;
+            padding: 0 25px;
             justify-content: space-between;
-            background: #000;
         }
 
         aside {
-            border-right: 1px solid var(--neon);
-            padding: 20px;
             background: #080808;
+            border-right: 1px solid #1a1a1a;
+            padding: 20px;
         }
+
+        .nav-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .nav-item:hover { border-color: var(--neon-green); background: #111; }
+        .nav-item.active { background: var(--neon-green); color: #000; font-weight: bold; }
 
         main {
+            background: #000;
             padding: 30px;
             overflow-y: auto;
-            background: radial-gradient(circle at center, #0a0a0a 0%, #000 100%);
         }
 
-        footer {
-            grid-column: 1 / 3;
-            border-top: 1px solid var(--neon);
-            background: #000;
-            padding: 10px;
-            overflow-y: scroll;
-            font-size: 12px;
+        /* --- TABLAS Y CARDS --- */
+        .card {
+            background: #0f0f0f;
+            border: 1px solid #222;
+            padding: 20px;
+            margin-bottom: 25px;
         }
-
-        /* --- COMPONENTES --- */
-        .input-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-size: 12px; }
-        input {
-            width: 100%;
-            padding: 10px;
-            background: var(--dark-grey);
-            border: 1px solid var(--neon);
-            color: var(--neon);
-            outline: none;
-        }
-
-        .btn {
-            background: var(--neon);
-            color: #000;
-            border: none;
-            padding: 10px 20px;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            width: 100%;
-        }
-
-        .btn:hover { background: #fff; box-shadow: 0 0 10px #fff; }
-
-        .btn-danger { background: var(--error); color: #fff; }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 15px;
         }
 
         th, td {
-            border: 1px solid #222;
             padding: 12px;
             text-align: left;
+            border-bottom: 1px solid #1a1a1a;
+            font-size: 13px;
         }
 
-        th { background: #111; color: #fff; }
+        th { color: #fff; background: #151515; }
 
-        .status-dot {
-            height: 10px;
-            width: 10px;
-            background-color: var(--neon);
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 10px;
-            animation: pulse 1.5s infinite;
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 10px;
+            background: var(--error-red);
+            color: #fff;
+            border: none;
+            cursor: pointer;
         }
 
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.3; }
-            100% { opacity: 1; }
+        /* --- TERMINAL (FOOTER) --- */
+        footer {
+            grid-column: 1 / 3;
+            background: #000;
+            border-top: 1px solid #1a1a1a;
+            padding: 15px;
+            font-size: 11px;
+            overflow-y: auto;
+            color: #008f11;
         }
 
-        .card-stat {
-            border: 1px solid #333;
-            padding: 20px;
-            background: #111;
-            margin-bottom: 20px;
-        }
+        .log-entry { margin-bottom: 4px; }
+        .log-time { color: #555; margin-right: 8px; }
 
-        /* --- SCROLLBAR --- */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: #000; }
-        ::-webkit-scrollbar-thumb { background: var(--neon); }
+        /* --- ANIMACIONES --- */
+        .blink { animation: blinker 1s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0; } }
 
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--neon-green); }
     </style>
 </head>
 <body>
 
-    <div id="login-screen">
-        <div class="login-card">
-            <h2 style="text-align:center">CORE_AUTH v5</h2>
-            <div class="input-group">
-                <label>IDENTIFICADOR</label>
-                <input type="text" id="logUser" placeholder="admin / x">
+    <div id="login-overlay">
+        <div class="login-box">
+            <h1>SISTEMA_LOGIN</h1>
+            <div class="field">
+                <label>IDENTIFICACIÓN DE USUARIO</label>
+                <input type="text" id="userInput" placeholder="x / admin">
             </div>
-            <div class="input-group">
+            <div class="field">
                 <label>CÓDIGO DE ACCESO</label>
-                <input type="password" id="logPass" placeholder="password123 / x">
+                <input type="password" id="passInput" placeholder="x / password123">
             </div>
-            <button class="btn" onclick="intentarLogin()">Sincronizar</button>
-            <p id="login-msg" style="font-size: 10px; margin-top: 15px; text-align: center;"></p>
+            <button class="btn-core" onclick="authProtocol()">Sincronizar</button>
+            <p id="auth-status" style="margin-top:20px; font-size:11px; color:var(--error-red)"></p>
         </div>
     </div>
 
-    <div id="main-dashboard">
+    <div id="admin-panel" style="display: none;">
         <header>
-            <div><span class="status-dot"></span> SISTEMA EN LÍNEA | NODO: 026_CO</div>
-            <button onclick="cerrarSesion()" style="background:transparent; border:1px solid red; color:red; cursor:pointer; padding:5px;">LOGOUT</button>
+            <div style="display:flex; align-items:center;">
+                <div style="width:10px; height:10px; background:var(--neon-green); border-radius:50%; margin-right:10px;" class="blink"></div>
+                <span>ESTADO: <span style="color:#fff">EN LÍNEA</span> | USUARIO: <span id="current-user" style="color:#fff">-</span></span>
+            </div>
+            <button onclick="logout()" style="background:none; border:1px solid #333; color:#fff; padding:5px 15px; cursor:pointer;">CERRAR_SESIÓN</button>
         </header>
 
         <aside>
-            <h4 style="border-bottom: 1px solid #333; padding-bottom: 10px;">MÓDULOS</h4>
-            <nav>
-                <p style="cursor:pointer" onclick="cambiarTab('db')">💾 Base de Datos</p>
-                <p style="cursor:pointer" onclick="cambiarTab('net')">🌐 Red y Tráfico</p>
-                <p style="cursor:pointer" onclick="cambiarTab('set')">⚙️ Configuración</p>
-            </nav>
+            <h4 style="font-size:12px; margin-bottom:20px; color:#555;">MÓDULOS_SISTEMA</h4>
+            <div class="nav-item active">💾 GESTIÓN_DB</div>
+            <div class="nav-item">📡 TRÁFICO_RED</div>
+            <div class="nav-item">🛠️ AJUSTES</div>
         </aside>
 
-        <main id="content-area">
-            <section id="tab-db">
-                <h3>CONTROL DE USUARIOS EN SUPABASE</h3>
-                <div style="display: flex; gap: 20px;">
-                    <div class="card-stat" style="flex: 1;">
-                        <h4>Añadir Usuario</h4>
-                        <input type="text" id="newU" placeholder="Nombre" style="margin-bottom:10px">
-                        <input type="text" id="newP" placeholder="Contraseña" style="margin-bottom:10px">
-                        <button class="btn" onclick="crearUsuario()">Insertar en DB</button>
+        <main>
+            <div class="card">
+                <h3>REGISTRO DE USUARIOS (SUPABASE)</h3>
+                <p style="font-size:12px; color:#666; margin-bottom:20px;">Manipulación directa de la tabla `usuarios` vía API Publishable.</p>
+                
+                <div style="display:flex; gap:20px;">
+                    <div style="flex:1; border:1px solid #222; padding:15px;">
+                        <h4 style="font-size:12px; margin-bottom:10px;">AÑADIR NUEVO REGISTRO</h4>
+                        <input type="text" id="addU" placeholder="Usuario" style="margin-bottom:10px; font-size:12px;">
+                        <input type="text" id="addP" placeholder="Password" style="margin-bottom:10px; font-size:12px;">
+                        <button class="btn-core" style="padding:8px;" onclick="createNewUser()">Insertar</button>
                     </div>
-                    <div class="card-stat" style="flex: 2;">
-                        <h4>Registros Actuales</h4>
-                        <button class="btn" style="width:auto; font-size:10px;" onclick="cargarTabla()">Refrescar Tabla</button>
-                        <table id="userTable">
+
+                    <div style="flex:2;">
+                        <table id="mainTable">
                             <thead>
                                 <tr>
                                     <th>ID</th>
-                                    <th>USUARIO</th>
-                                    <th>CLAVE</th>
-                                    <th>ACCIÓN</th>
+                                    <th>USERNAME</th>
+                                    <th>PASSWORD</th>
+                                    <th>ACCIONES</th>
                                 </tr>
                             </thead>
-                            <tbody id="tableBody"></tbody>
+                            <tbody id="tableContent">
+                                </tbody>
                         </table>
                     </div>
                 </div>
-            </section>
+            </div>
         </main>
 
-        <footer id="console-terminal">
-            <div>[SYS] Inicializando consola de depuración...</div>
+        <footer id="terminal">
+            <div class="log-entry"><span class="log-time">[00:00:00]</span> Esperando órdenes...</div>
         </footer>
     </div>
 
     <script>
-        // --- CONFIGURACIÓN CRÍTICA ---
+        // --- CONFIGURACIÓN DE NODO (Extraída de tus capturas) ---
         const SB_URL = "https://cmqgzwgqvpxuzmivxjcp.supabase.co";
-        const SB_KEY = "sb_publishable_jM1_oVJyaoB_03tMbw9m8w_69_ODcVr";
-        
-        const db = supabase.createClient(SB_URL, SB_KEY);
-        const terminal = document.getElementById('console-terminal');
+        const SB_KEY = "sb_publishable_jM1_oVJyaoB_03tMbw9m8w_69_ODcVr"; // Tu Publishable Key
 
-        function log(msg, color = "#00ff00") {
-            const time = new Date().toLocaleTimeString();
-            terminal.innerHTML += `<div style="color:${color}">[${time}] ${msg}</div>`;
+        let client;
+        const terminal = document.getElementById('terminal');
+
+        function writeLog(msg, type = 'info') {
+            const now = new Date().toLocaleTimeString();
+            let color = "#008f11";
+            if (type === 'error') color = "var(--error-red)";
+            if (type === 'warn') color = "var(--warning-yellow)";
+            
+            terminal.innerHTML += `<div class="log-entry"><span class="log-time">[${now}]</span> <span style="color:${color}">${msg}</span></div>`;
             terminal.scrollTop = terminal.scrollHeight;
         }
 
-        // --- LÓGICA DE LOGIN ---
-        async function intentarLogin() {
-            const u = document.getElementById('logUser').value.trim().toLowerCase();
-            const p = document.getElementById('logPass').value.trim();
-            const msg = document.getElementById('login-msg');
+        // Inicialización
+        window.onload = () => {
+            try {
+                client = supabase.createClient(SB_URL, SB_KEY);
+                writeLog("Conexión establecida con el nodo cmqgzwg...");
+                checkSession();
+            } catch (e) {
+                writeLog("Fallo crítico al cargar Supabase: " + e.message, 'error');
+            }
+        };
 
-            log("Iniciando protocolo de autenticación...");
+        // PROTOCOLO DE AUTENTICACIÓN
+        async function authProtocol() {
+            const u = document.getElementById('userInput').value.trim().toLowerCase();
+            const p = document.getElementById('passInput').value.trim();
+            const status = document.getElementById('auth-status');
+
+            writeLog(`Intento de acceso: ${u}...`);
 
             try {
-                const { data, error } = await db.from('usuarios').select('*');
+                // Pedimos todos los usuarios para comparar localmente (más robusto)
+                const { data, error } = await client.from('usuarios').select('*');
+
                 if (error) throw error;
 
-                const userMatch = data.find(f => f.username.toLowerCase() === u && f.password === p);
+                writeLog(`Registros encontrados en DB: ${data.length}`);
 
-                if (userMatch) {
-                    log("Acceso concedido para: " + u, "#fff");
-                    localStorage.setItem('sesion_activa', 'true');
-                    document.getElementById('login-screen').style.opacity = "0";
-                    setTimeout(() => {
-                        document.getElementById('login-screen').style.display = "none";
-                        document.getElementById('main-dashboard').style.display = "grid";
-                        cargarTabla();
-                    }, 1000);
+                const user = data.find(f => f.username.toLowerCase() === u && f.password === p);
+
+                if (user) {
+                    writeLog(`Acceso exitoso. Bienvenido ${u}`, 'warn');
+                    localStorage.setItem('sergio_session', u);
+                    launchDashboard(u);
                 } else {
-                    msg.innerHTML = "ERROR: CREDENCIALES INVÁLIDAS";
-                    log("Fallo de autenticación: " + u, "red");
+                    status.innerHTML = "ACCESO DENEGADO: CREDENCIALES ERRÓNEAS";
+                    writeLog(`Fallo de login para usuario: ${u}`, 'error');
                 }
+
             } catch (e) {
-                log("Error de conexión: " + e.message, "red");
+                writeLog("Error de red: " + e.message, 'error');
             }
         }
 
-        // --- GESTIÓN DE TABLA ---
-        async function cargarTabla() {
-            log("Sincronizando tabla 'usuarios'...");
-            const body = document.getElementById('tableBody');
-            body.innerHTML = "<tr><td colspan='4'>Cargando...</td></tr>";
+        function launchDashboard(username) {
+            document.getElementById('login-overlay').style.opacity = "0";
+            setTimeout(() => {
+                document.getElementById('login-overlay').style.display = "none";
+                document.getElementById('admin-panel').style.display = "grid";
+                document.getElementById('current-user').innerText = username.toUpperCase();
+                refreshTable();
+            }, 800);
+        }
 
-            const { data, error } = await db.from('usuarios').select('*').order('id', { ascending: true });
+        // GESTIÓN DE TABLA (CRUD)
+        async function refreshTable() {
+            writeLog("Sincronizando tabla de usuarios...");
+            const tbody = document.getElementById('tableContent');
+            tbody.innerHTML = "<tr><td colspan='4'>Cargando datos...</td></tr>";
+
+            const { data, error } = await client.from('usuarios').select('*').order('id', { ascending: true });
 
             if (error) {
-                log("Error al leer tabla: " + error.message, "red");
+                writeLog("Error al sincronizar: " + error.message, 'error');
                 return;
             }
 
-            body.innerHTML = "";
-            data.forEach(f => {
-                body.innerHTML += `
+            tbody.innerHTML = "";
+            data.forEach(row => {
+                tbody.innerHTML += `
                     <tr>
-                        <td>${f.id}</td>
-                        <td>${f.username}</td>
-                        <td>${f.password}</td>
-                        <td><button class="btn btn-danger" style="padding:2px 10px" onclick="eliminarUsuario(${f.id})">BORRAR</button></td>
+                        <td>${row.id}</td>
+                        <td style="color:#fff">${row.username}</td>
+                        <td>${row.password}</td>
+                        <td><button class="btn-sm" onclick="deleteUser(${row.id})">ELIMINAR</button></td>
                     </tr>
                 `;
             });
-            log("Sincronización completa. Registros: " + data.length);
         }
 
-        async function crearUsuario() {
-            const user = document.getElementById('newU').value.trim();
-            const pass = document.getElementById('newP').value.trim();
+        async function createNewUser() {
+            const u = document.getElementById('addU').value.trim();
+            const p = document.getElementById('addP').value.trim();
 
-            if (!user || !pass) return log("Faltan datos para crear usuario", "yellow");
+            if (!u || !p) return writeLog("Campos vacíos. Abortando inserción.", 'warn');
 
-            log(`Insertando nuevo registro: ${user}...`);
-            const { error } = await db.from('usuarios').insert([{ username: user, password: pass }]);
+            writeLog(`Insertando usuario: ${u}...`);
+            const { error } = await client.from('usuarios').insert([{ username: u, password: p }]);
 
             if (error) {
-                log("Fallo al insertar: " + error.message, "red");
+                writeLog("Error al crear: " + error.message, 'error');
             } else {
-                log("Usuario creado con éxito", "cyan");
-                cargarTabla();
+                writeLog("Registro insertado correctamente.", 'warn');
+                document.getElementById('addU').value = "";
+                document.getElementById('addP').value = "";
+                refreshTable();
             }
         }
 
-        async function eliminarUsuario(id) {
-            if (!confirm("¿Seguro que quieres borrar el ID " + id + "?")) return;
-            
-            log(`Eliminando ID: ${id}...`);
-            const { error } = await db.from('usuarios').delete().eq('id', id);
+        async function deleteUser(id) {
+            if (!confirm(`¿Eliminar registro ID ${id}?`)) return;
+
+            writeLog(`Borrando registro ID ${id}...`);
+            const { error } = await client.from('usuarios').delete().eq('id', id);
 
             if (error) {
-                log("Fallo al borrar: " + error.message, "red");
+                writeLog("Error al borrar: " + error.message, 'error');
             } else {
-                log("Registro eliminado", "yellow");
-                cargarTabla();
+                writeLog(`ID ${id} eliminado del sistema.`, 'warn');
+                refreshTable();
             }
         }
 
-        function cerrarSesion() {
-            localStorage.removeItem('sesion_activa');
+        function checkSession() {
+            const s = localStorage.getItem('sergio_session');
+            if (s) launchDashboard(s);
+        }
+
+        function logout() {
+            localStorage.removeItem('sergio_session');
             location.reload();
         }
-
-        // Persistencia
-        if (localStorage.getItem('sesion_activa') === 'true') {
-            document.getElementById('login-screen').style.display = "none";
-            document.getElementById('main-dashboard').style.display = "grid";
-            cargarTabla();
-        }
-
     </script>
 </body>
 </html>
