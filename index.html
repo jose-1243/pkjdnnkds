@@ -1,37 +1,7 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>SISTEMA SERGIO | VERIFICACIÓN FORZADA</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        body { background: #0a0a0a; color: #00ff00; font-family: 'Courier New', monospace; padding: 40px; }
-        .login-box { border: 2px solid #00ff00; padding: 30px; max-width: 400px; margin: auto; background: #000; box-shadow: 0 0 20px #00ff0044; }
-        input { background: #111; border: 1px solid #00ff00; color: #00ff00; width: 100%; padding: 12px; margin: 10px 0; outline: none; }
-        button { width: 100%; padding: 15px; background: #00ff00; color: #000; font-weight: bold; border: none; cursor: pointer; text-transform: uppercase; }
-        button:hover { background: #00cc00; }
-        #monitor { margin-top: 20px; font-size: 12px; border-top: 1px solid #222; padding-top: 10px; }
-        .match { color: #00ff00; font-weight: bold; }
-        .fail { color: #ff3333; }
-    </style>
-</head>
-<body>
-
-<div class="login-box">
-    <h2 style="text-align: center; letter-spacing: 2px;">SECURITY CHECK</h2>
-    <input type="text" id="campoUser" placeholder="USUARIO">
-    <input type="password" id="campoPass" placeholder="CONTRASEÑA">
-    <button onclick="verificarAhora()">Sincronizar Acceso</button>
-    
-    <div id="monitor">>> Terminal lista para escaneo...</div>
-</div>
-
 <script>
-    // Usamos nombres ÚNICOS para que no haya error de "already declared"
     const CONFIG_URL = "https://cmqgzwgqvpxuzmivxjcp.supabase.co".trim();
     const CONFIG_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtcWd6d2dxdnB4dXptaXZ4amNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NDk0NzQsImV4cCI6MjA5MDEyNTQ3NH0.yxukU3-y26DNLdCfEymPNgUSGmHorhuQNPng_fEkWOo".trim();
     
-    // Cambiamos el nombre de la variable de 'supabase' a 'instanciaDB'
     const instanciaDB = supabase.createClient(CONFIG_URL, CONFIG_KEY);
 
     async function verificarAhora() {
@@ -39,40 +9,44 @@
         const uDigitado = document.getElementById('campoUser').value.trim();
         const pDigitado = document.getElementById('campoPass').value.trim();
 
-        palla.innerHTML = "Consultando base de datos...";
+        palla.innerHTML = ">> Extrayendo registros de la base de datos...";
 
         try {
-            // Traemos los datos de tu tabla 'usuarios'
+            // CAMBIO CLAVE: Traemos TODO sin filtrar en la nube para ver qué llega
             const { data, error } = await instanciaDB.from('usuarios').select('*');
 
             if (error) throw error;
 
-            palla.innerHTML = ""; // Limpiar pantalla
+            if (!data || data.length === 0) {
+                palla.innerHTML = "<div class='fail'>>> ERROR: La base de datos devolvió 0 registros. Revisa el RLS en Supabase.</div>";
+                return;
+            }
+
+            palla.innerHTML = `>> Registros recibidos: ${data.length}. Analizando...<br>`;
 
             let exito = false;
 
             data.forEach(fila => {
-                // Comprobamos cada fila de tu tabla
-                const uDB = fila.username.trim();
-                const pDB = fila.password.trim();
+                const uDB = String(fila.username).trim();
+                const pDB = String(fila.password).trim();
+
+                // Mostramos en pantalla qué está comparando exactamente
+                palla.innerHTML += `> Comparando: [${uDigitado}] con [${uDB}]... `;
 
                 if (uDB === uDigitado && pDB === pDigitado) {
                     exito = true;
-                    palla.innerHTML += `<div class="match">>> COINCIDENCIA ENCONTRADA: Bienvenido ${uDB}</div>`;
+                    palla.innerHTML += "<span class='match'>COINCIDE</span><br>";
                 } else {
-                    palla.innerHTML += `<div class="fail">>> No coincide con: "${uDB}" / "${pDB}"</div>`;
+                    palla.innerHTML += "<span class='fail'>NO COINCIDE</span><br>";
                 }
             });
 
             if (exito) {
-                setTimeout(() => { alert("¡ACCESO CONCEDIDO!"); }, 500);
+                alert("¡SISTEMA DESBLOQUEADO!");
             }
 
         } catch (err) {
-            palla.innerHTML = `<div class="fail">ERROR TÉCNICO: ${err.message}</div>`;
+            palla.innerHTML = `<div class="fail">ERROR DE CONEXIÓN: ${err.message}</div>`;
         }
     }
 </script>
-
-</body>
-</html>
