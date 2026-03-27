@@ -3,35 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXUS SOCIAL | FASE 3</title>
-    
+    <title>NEXUS SOCIAL | REALTIME OK</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;800&display=swap" rel="stylesheet">
-
     <style>
         :root { --primary: #7c3aed; --bg: #0b0f1a; --card: #161b2c; --border: rgba(255,255,255,0.1); }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); color: white; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
-
-        /* --- ACCESO --- */
+        
+        /* Contenedores Principales */
         #auth-screen { height: 100vh; display: flex; justify-content: center; align-items: center; width: 100%; }
+        #main-app { display: none; width: 100%; max-width: 600px; padding: 40px 20px; }
+
         .auth-card { background: var(--card); padding: 40px; border-radius: 24px; width: 380px; border: 1px solid var(--border); text-align: center; }
         .tabs { display: flex; margin-bottom: 25px; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 12px; }
         .tab { flex: 1; padding: 10px; border: none; background: none; color: white; cursor: pointer; border-radius: 8px; font-weight: 600; }
         .tab.active { background: var(--primary); }
+
         input { width: 100%; padding: 14px; margin-bottom: 15px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 10px; color: white; outline: none; }
         .btn { width: 100%; padding: 14px; background: var(--primary); border: none; border-radius: 10px; color: white; font-weight: 800; cursor: pointer; transition: 0.3s; }
-
-        /* --- APP --- */
-        #main-app { display: none; width: 100%; max-width: 600px; padding: 40px 20px; }
+        
+        /* Estilos del Feed */
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
         .post-creator { background: var(--card); padding: 20px; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 30px; }
         textarea { width: 100%; background: transparent; border: none; color: white; font-size: 18px; resize: none; outline: none; height: 100px; font-family: inherit; }
+        
         .feed-item { background: var(--card); padding: 20px; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 20px; animation: slideIn 0.4s ease-out; }
         @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
         .user-meta { display: flex; align-items: center; margin-bottom: 15px; }
-        .avatar { width: 45px; height: 45px; background: var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: 800; margin-right: 15px; }
+        .avatar { width: 40px; height: 40px; background: var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: 800; margin-right: 12px; }
         .post-actions { display: flex; gap: 20px; margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); color: #888; font-size: 14px; }
     </style>
 </head>
@@ -39,7 +41,7 @@
 
     <div id="auth-screen">
         <div class="auth-card">
-            <h1>Nexus Social</h1>
+            <h1 style="margin-bottom:10px">Nexus Social</h1>
             <div class="tabs">
                 <button id="t-login" class="tab active" onclick="setMode('login')">Ingresar</button>
                 <button id="t-reg" class="tab" onclick="setMode('reg')">Registrarse</button>
@@ -54,13 +56,13 @@
     <div id="main-app">
         <header>
             <h2 id="welcome-title">Bienvenido</h2>
-            <button onclick="logout()" style="background:none; border:none; color:#ff4444; cursor:pointer;">SALIR</button>
+            <button onclick="logout()" style="background:none; border:none; color:#ff4444; cursor:pointer; font-weight:600">SALIR</button>
         </header>
 
         <div class="post-creator">
-            <textarea id="postInput" placeholder="¿Qué estás pensando?"></textarea>
+            <textarea id="postInput" placeholder="¿Qué hay de nuevo?"></textarea>
             <div style="text-align: right;">
-                <button class="btn" id="btnPublicar" style="width: 140px;" onclick="publicarPost()">Publicar</button>
+                <button class="btn" id="btnPublicar" style="width: 140px; padding:10px" onclick="publicarPost()">Publicar</button>
             </div>
         </div>
 
@@ -68,8 +70,9 @@
     </div>
 
     <script>
+        // CONFIGURACIÓN (Basada en tu captura de pantalla)
         const SB_URL = "https://cmqgzwgqvpxuzmivxjcp.supabase.co";
-        const SB_KEY = "sb_publishable_jM1_oVJyaoB_03tMbw9m8w_69_ODcVr";
+        const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtcWd6d2dxdnB4dXptaXZ4amNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg1MDUyODEsImV4cCI6MjA1NDA4MTI4MX0.7OQOfmZ89D7zK1MvWqZ7m-Dsh_U_eMInm8C7W-0V3fQ"; 
         const db = supabase.createClient(SB_URL, SB_KEY);
 
         let mode = 'login';
@@ -91,12 +94,12 @@
             if (mode === 'reg') {
                 const { error } = await db.from('usuarios').insert([{ username: u, password: p }]);
                 if (error) status.innerHTML = "❌ " + error.message;
-                else { status.innerHTML = "✅ Registrado con éxito"; setMode('login'); }
+                else { status.innerHTML = "✅ ¡Cuenta creada! Ya puedes entrar."; setMode('login'); }
             } else {
                 const { data } = await db.from('usuarios').select('*');
                 const match = data.find(f => f.username.toLowerCase() === u.toLowerCase() && f.password === p);
                 if (match) iniciarApp(match.username);
-                else status.innerHTML = "❌ Datos incorrectos";
+                else status.innerHTML = "❌ Usuario o clave incorrectos";
             }
         }
 
@@ -106,10 +109,32 @@
             document.getElementById('auth-screen').style.display = "none";
             document.getElementById('main-app').style.display = "block";
             document.getElementById('welcome-title').innerText = "Hola, " + username;
-            cargarPostsReales();
+            
+            cargarPostsIniciales();
+            activarEscuchaRealtime();
         }
 
-        // --- NUEVA LÓGICA DE FASE 3 (CONEXIÓN A DB) ---
+        // --- LA LÓGICA DE REALTIME ---
+        function activarEscuchaRealtime() {
+            console.log("Sincronizando con el Nexo en tiempo real...");
+            
+            db.channel('muro_publico')
+            .on('postgres_changes', 
+                { event: 'INSERT', schema: 'public', table: 'posts' }, 
+                (payload) => {
+                    console.log("¡Nuevo post detectado!", payload.new);
+                    const post = payload.new;
+                    const fecha = new Date(post.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    
+                    // Solo lo agregamos si no existe ya en el DOM (para evitar duplicados al publicar uno mismo)
+                    if (!document.getElementById(`post-${post.id}`)) {
+                        renderizarPost({ id: post.id, autor: post.autor, texto: post.texto, hora: fecha }, true);
+                    }
+                }
+            )
+            .subscribe();
+        }
+
         async function publicarPost() {
             const content = document.getElementById('postInput').value.trim();
             const btn = document.getElementById('btnPublicar');
@@ -118,40 +143,39 @@
             btn.disabled = true;
             btn.innerText = "Enviando...";
 
-            const { error } = await db.from('posts').insert([
+            const { data, error } = await db.from('posts').insert([
                 { autor: currentUser, texto: content }
-            ]);
+            ]).select(); // .select() es importante para obtener el ID de vuelta inmediatamente
 
             if (error) {
-                alert("Error al publicar");
+                alert("Error de conexión");
             } else {
                 document.getElementById('postInput').value = "";
-                cargarPostsReales(); // Recargamos para ver el nuevo post
+                // El renderizado ocurrirá automáticamente gracias al Realtime
             }
             btn.disabled = false;
             btn.innerText = "Publicar";
         }
 
-        async function cargarPostsReales() {
-            const container = document.getElementById('feed-container');
-            
-            // Traemos los posts ordenados por el más reciente
+        async function cargarPostsIniciales() {
             const { data, error } = await db.from('posts').select('*').order('created_at', { ascending: false });
-
-            if (error) return console.log("Error cargando posts");
-
-            container.innerHTML = ""; // Limpiar feed
+            if (error) return;
+            
+            const container = document.getElementById('feed-container');
+            container.innerHTML = ""; 
+            
             data.forEach(post => {
                 const fecha = new Date(post.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                renderizarPost({ autor: post.autor, texto: post.texto, hora: fecha });
+                renderizarPost({ id: post.id, autor: post.autor, texto: post.texto, hora: fecha }, false);
             });
         }
 
-        function renderizarPost(post) {
+        function renderizarPost(post, alInicio = false) {
             const container = document.getElementById('feed-container');
             const inicial = post.autor.charAt(0).toUpperCase();
+            
             const postHTML = `
-                <div class="feed-item">
+                <div class="feed-item" id="post-${post.id}">
                     <div class="user-meta">
                         <div class="avatar">${inicial}</div>
                         <div>
@@ -166,13 +190,16 @@
                     </div>
                 </div>
             `;
-            container.innerHTML += postHTML;
+
+            if(alInicio) container.insertAdjacentHTML('afterbegin', postHTML);
+            else container.innerHTML += postHTML;
         }
 
         function logout() { localStorage.removeItem('nexus_session'); location.reload(); }
+        
+        // Auto-login
         const sesion = localStorage.getItem('nexus_session');
         if (sesion) iniciarApp(sesion);
     </script>
 </body>
 </html>
-       
