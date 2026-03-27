@@ -3,436 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SOCIAL NEXUS | RED GLOBAL</title>
-    
+    <title>NEXUS SOCIAL | ACCESO</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
-
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;800&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --brand: #7c3aed;
-            --brand-light: #a78bfa;
-            --bg: #0b0f1a;
-            --card: #161b2c;
-            --text: #f8fafc;
-            --border: rgba(255,255,255,0.08);
-            --glass: rgba(22, 27, 44, 0.8);
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
+        :root { --primary: #7c3aed; --bg: #0b0f1a; --card: #161b2c; }
         body {
             font-family: 'Outfit', sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            overflow-x: hidden;
-        }
-
-        /* --- SISTEMA DE LOGIN / REGISTRO --- */
-        #auth-container {
-            position: fixed;
-            inset: 0;
-            background: linear-gradient(135deg, #0b0f1a 0%, #1e1b4b 100%);
-            z-index: 2000;
+            background: var(--bg);
+            color: white;
             display: flex;
             justify-content: center;
             align-items: center;
-            transition: 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            height: 100vh;
+            margin: 0;
         }
-
         .auth-card {
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--border);
+            background: var(--card);
             padding: 40px;
-            width: 420px;
-            border-radius: 30px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-            text-align: center;
+            border-radius: 24px;
+            width: 380px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
         }
-
-        .tabs-auth {
-            display: flex;
-            background: rgba(0,0,0,0.2);
-            border-radius: 15px;
-            margin-bottom: 25px;
-            padding: 5px;
+        .tabs { display: flex; margin-bottom: 25px; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 12px; }
+        .tab { flex: 1; padding: 10px; border: none; background: none; color: white; cursor: pointer; border-radius: 8px; font-weight: 600; }
+        .tab.active { background: var(--primary); }
+        input {
+            width: 100%; padding: 14px; margin-bottom: 15px;
+            background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; color: white; outline: none; box-sizing: border-box;
         }
-
-        .tab-btn {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            background: none;
-            color: white;
-            cursor: pointer;
-            border-radius: 10px;
-            font-weight: 600;
+        input:focus { border-color: var(--primary); }
+        .btn {
+            width: 100%; padding: 14px; background: var(--primary);
+            border: none; border-radius: 10px; color: white;
+            font-weight: 800; cursor: pointer; transition: 0.3s;
         }
-
-        .tab-btn.active { background: var(--brand); }
-
-        .input-field {
-            width: 100%;
-            padding: 15px;
-            margin-bottom: 15px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            color: white;
-            outline: none;
-        }
-
-        .input-field:focus { border-color: var(--brand); }
-
-        .main-btn {
-            width: 100%;
-            padding: 15px;
-            background: var(--brand);
-            border: none;
-            border-radius: 12px;
-            color: white;
-            font-weight: 800;
-            cursor: pointer;
-            transition: 0.3s;
-            text-transform: uppercase;
-        }
-
-        .main-btn:hover { transform: scale(1.02); box-shadow: 0 0 20px rgba(124, 58, 237, 0.4); }
-
-        /* --- LAYOUT RED SOCIAL --- */
-        #social-app {
-            display: none;
-            grid-template-columns: 280px 1fr 350px;
-            max-width: 1400px;
-            margin: 0 auto;
-            min-height: 100vh;
-            gap: 20px;
-            padding: 20px;
-        }
-
-        /* BARRA LATERAL IZQUIERDA */
-        .sidebar {
-            position: sticky;
-            top: 20px;
-            height: calc(100vh - 40px);
-        }
-
-        .nav-card {
-            background: var(--card);
-            border-radius: 20px;
-            padding: 20px;
-            border: 1px solid var(--border);
-        }
-
-        .nav-link {
-            display: flex;
-            align-items: center;
-            padding: 15px;
-            text-decoration: none;
-            color: var(--text);
-            border-radius: 12px;
-            margin-bottom: 5px;
-            transition: 0.2s;
-            font-weight: 500;
-        }
-
-        .nav-link:hover, .nav-link.active { background: rgba(124, 58, 237, 0.1); color: var(--brand-light); }
-        .nav-link i { margin-right: 15px; font-size: 20px; }
-
-        /* FEED CENTRAL */
-        .feed { padding-bottom: 50px; }
-
-        .post-creator {
-            background: var(--card);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 25px;
-            border: 1px solid var(--border);
-        }
-
-        .post-input {
-            width: 100%;
-            background: transparent;
-            border: none;
-            color: white;
-            font-size: 18px;
-            resize: none;
-            outline: none;
-            margin-bottom: 15px;
-            min-height: 80px;
-        }
-
-        /* CARTA DE POST */
-        .post-card {
-            background: var(--card);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid var(--border);
-            animation: slideUp 0.5s ease forwards;
-        }
-
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        .post-header { display: flex; align-items: center; margin-bottom: 15px; }
-        .avatar {
-            width: 45px; height: 45px;
-            background: var(--brand);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            margin-right: 12px;
-        }
-
-        .post-actions {
-            display: flex;
-            border-top: 1px solid var(--border);
-            margin-top: 15px;
-            padding-top: 15px;
-            gap: 20px;
-        }
-
-        .action-item { cursor: pointer; opacity: 0.6; transition: 0.2s; }
-        .action-item:hover { opacity: 1; color: var(--brand-light); }
-
-        /* BARRA DERECHA (WIDGETS) */
-        .widgets { position: sticky; top: 20px; }
-        .widget-card {
-            background: var(--card);
-            border-radius: 20px;
-            padding: 20px;
-            border: 1px solid var(--border);
-            margin-bottom: 20px;
-        }
-
-        /* NOTIFICACIÓN TOAST */
-        #toast {
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
-            background: var(--brand); color: white; padding: 12px 30px; border-radius: 50px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3); transition: 0.5s; z-index: 3000;
-        }
-
-        /* SCROLLBAR */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: var(--brand); border-radius: 10px; }
-
+        .btn:hover { opacity: 0.9; transform: translateY(-2px); }
+        #status { margin-top: 15px; font-size: 13px; text-align: center; }
     </style>
 </head>
 <body>
 
-    <div id="toast">Acción completada</div>
-
-    <div id="auth-container">
-        <div class="auth-card">
-            <h1 style="margin-bottom: 10px; font-weight: 800; letter-spacing: -1px;">Nexus Social</h1>
-            <p style="font-size: 14px; opacity: 0.6; margin-bottom: 25px;">Conecta con el mundo en tiempo real</p>
-            
-            <div class="tabs-auth">
-                <button class="tab-btn active" id="loginTab" onclick="switchAuth('login')">Ingresar</button>
-                <button class="tab-btn" id="regTab" onclick="switchAuth('reg')">Registrarse</button>
-            </div>
-
-            <div id="auth-fields">
-                <input type="text" id="userInput" class="input-field" placeholder="Nombre de usuario">
-                <input type="password" id="passInput" class="input-field" placeholder="Contraseña">
-            </div>
-            
-            <button class="main-btn" onclick="procesarAuth()" id="btnAuth">Entrar al Nexo</button>
-            <p id="msg-error" style="color: #f87171; font-size: 12px; margin-top: 15px;"></p>
-        </div>
+<div class="auth-card">
+    <h1 style="margin:0 0 10px 0; text-align:center;">Nexus Social</h1>
+    <p style="text-align:center; opacity:0.6; font-size:14px; margin-bottom:25px;">Fase 1: Autenticación de Nodo</p>
+    
+    <div class="tabs">
+        <button id="t-login" class="tab active" onclick="setMode('login')">Ingresar</button>
+        <button id="t-reg" class="tab" onclick="setMode('reg')">Registrarse</button>
     </div>
 
-    <div id="social-app">
-        <div class="sidebar">
-            <div class="nav-card">
-                <h2 style="margin-bottom: 25px; color: var(--brand-light);">Nexus.</h2>
-                <a href="#" class="nav-link active"><i class="fas fa-home"></i> Inicio</a>
-                <a href="#" class="nav-link"><i class="fas fa-hashtag"></i> Explorar</a>
-                <a href="#" class="nav-link"><i class="fas fa-bell"></i> Notificaciones</a>
-                <a href="#" class="nav-link"><i class="fas fa-envelope"></i> Mensajes</a>
-                <a href="#" class="nav-link"><i class="fas fa-user"></i> Perfil</a>
-                <div style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">
-                    <button class="main-btn" style="padding: 10px;" onclick="cerrarSesion()">Salir</button>
-                </div>
-            </div>
-        </div>
+    <input type="text" id="user" placeholder="Nombre de usuario">
+    <input type="password" id="pass" placeholder="Contraseña">
+    <button class="btn" id="mainBtn" onclick="execAuth()">ENTRAR AL NEXO</button>
+    
+    <div id="status"></div>
+</div>
 
-        <div class="feed">
-            <div class="post-creator">
-                <textarea class="post-input" id="postContent" placeholder="¿Qué está pasando, Sergio?"></textarea>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div style="color: var(--brand-light); font-size: 18px; display: flex; gap: 15px;">
-                        <i class="far fa-image" style="cursor:pointer"></i>
-                        <i class="far fa-chart-bar" style="cursor:pointer"></i>
-                        <i class="far fa-smile" style="cursor:pointer"></i>
-                    </div>
-                    <button class="main-btn" style="width: 120px; padding: 10px;" onclick="crearPost()">Publicar</button>
-                </div>
-            </div>
+<script>
+    const SB_URL = "https://cmqgzwgqvpxuzmivxjcp.supabase.co";
+    const SB_KEY = "sb_publishable_jM1_oVJyaoB_03tMbw9m8w_69_ODcVr";
+    const db = supabase.createClient(SB_URL, SB_KEY);
 
-            <div id="feed-container">
-                </div>
-        </div>
+    let mode = 'login';
 
-        <div class="widgets">
-            <div class="widget-card">
-                <h3>Tendencias para ti</h3>
-                <div style="margin-top: 15px;">
-                    <p style="font-size: 12px; opacity: 0.5;">Fútbol · Tendencia</p>
-                    <p style="font-weight: 600;">#FreeFireWorld</p>
-                    <p style="font-size: 12px; opacity: 0.5; margin-top: 10px;">Programación · Tendencia</p>
-                    <p style="font-weight: 600;">#JavaScript2026</p>
-                </div>
-            </div>
-            <div class="widget-card">
-                <h3>Sugerencias</h3>
-                <div style="display: flex; align-items: center; margin-top: 15px;">
-                    <div class="avatar" style="width: 35px; height: 35px; font-size: 12px;">AD</div>
-                    <div style="flex: 1; margin-left: 10px;">
-                        <p style="font-size: 14px; font-weight: 600;">Admin_Global</p>
-                    </div>
-                    <button class="main-btn" style="width: auto; padding: 5px 12px; font-size: 12px;">Seguir</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    function setMode(m) {
+        mode = m;
+        document.getElementById('t-login').classList.toggle('active', m === 'login');
+        document.getElementById('t-reg').classList.toggle('active', m === 'reg');
+        document.getElementById('mainBtn').innerText = m === 'login' ? 'ENTRAR AL NEXO' : 'CREAR MI CUENTA';
+    }
 
-    <script>
-        // CONFIGURACIÓN SUPABASE
-        const SB_URL = "https://cmqgzwgqvpxuzmivxjcp.supabase.co";
-        const SB_KEY = "sb_publishable_jM1_oVJyaoB_03tMbw9m8w_69_ODcVr";
-        const db = supabase.createClient(SB_URL, SB_KEY);
+    async function execAuth() {
+        const u = document.getElementById('user').value.trim();
+        const p = document.getElementById('pass').value.trim();
+        const status = document.getElementById('status');
 
-        let currentAuthMode = 'login';
-        let currentUser = null;
+        if (!u || !p) return status.innerHTML = "⚠️ Llena los campos";
+        status.innerHTML = "🛰️ Procesando...";
 
-        // --- LÓGICA DE INTERFAZ ---
-        function switchAuth(mode) {
-            currentAuthMode = mode;
-            document.getElementById('loginTab').classList.toggle('active', mode === 'login');
-            document.getElementById('regTab').classList.toggle('active', mode === 'reg');
-            document.getElementById('btnAuth').innerText = mode === 'login' ? 'Entrar al Nexo' : 'Crear mi Cuenta';
-        }
-
-        function notify(msg) {
-            const t = document.getElementById('toast');
-            t.innerText = msg;
-            t.style.transform = "translateX(-50%) translateY(0)";
-            setTimeout(() => t.style.transform = "translateX(-50%) translateY(100px)", 3000);
-        }
-
-        // --- LÓGICA DE AUTENTICACIÓN ---
-        async function procesarAuth() {
-            const u = document.getElementById('userInput').value.trim();
-            const p = document.getElementById('passInput').value.trim();
-            const error = document.getElementById('msg-error');
-
-            if (!u || !p) return error.innerText = "Completa todos los campos";
-
-            if (currentAuthMode === 'reg') {
-                // REGISTRO
-                const { error: regErr } = await db.from('usuarios').insert([{ username: u, password: p }]);
-                if (regErr) return error.innerText = "Error al registrar: " + regErr.message;
-                notify("¡Cuenta creada! Ya puedes iniciar sesión");
-                switchAuth('login');
+        if (mode === 'reg') {
+            // REGISTRO REAL EN SUPABASE
+            const { error } = await db.from('usuarios').insert([{ username: u, password: p }]);
+            if (error) {
+                status.innerHTML = "❌ Error: " + error.message;
             } else {
-                // LOGIN
-                const { data, error: logErr } = await db.from('usuarios').select('*');
-                if (logErr) return error.innerText = "Error de red";
-                
-                const found = data.find(f => f.username.toLowerCase() === u.toLowerCase() && f.password === p);
-                if (found) {
-                    entrarApp(found.username);
-                } else {
-                    error.innerText = "Usuario o contraseña incorrectos";
-                }
+                status.innerHTML = "✅ ¡Cuenta creada! Ya puedes entrar.";
+                setMode('login');
+            }
+        } else {
+            // LOGIN REAL
+            const { data, error } = await db.from('usuarios').select('*');
+            if (error) return status.innerHTML = "❌ Fallo de conexión";
+            
+            const match = data.find(f => f.username.toLowerCase() === u.toLowerCase() && f.password === p);
+            if (match) {
+                status.innerHTML = "🔓 Acceso concedido...";
+                localStorage.setItem('nexus_user', u);
+                // Aquí en la Fase 2 pondremos la redirección al feed
+                alert("¡Bienvenido " + u + "! Fase 1 completada.");
+            } else {
+                status.innerHTML = "❌ Datos incorrectos";
             }
         }
+    }
+</script>
 
-        function entrarApp(name) {
-            currentUser = name;
-            localStorage.setItem('nexus_user', name);
-            document.getElementById('auth-container').style.opacity = "0";
-            setTimeout(() => {
-                document.getElementById('auth-container').style.display = "none";
-                document.getElementById('social-app').style.display = "grid";
-                cargarFeed();
-            }, 800);
-        }
-
-        // --- GESTIÓN DE POSTS (MURO) ---
-        // Nota: Para los posts usaremos la misma tabla 'usuarios' o puedes crear una nueva 'posts' en Supabase.
-        // Aquí simularemos que los posts se guardan en un array local para la demo, pero te enseñaré cómo enviarlos.
-        
-        async function crearPost() {
-            const content = document.getElementById('postContent').value.trim();
-            if (!content) return;
-
-            notify("Publicando...");
-            
-            // Simulación de guardado (En un proyecto real usarías db.from('posts').insert(...))
-            const nuevoPost = {
-                user: currentUser,
-                text: content,
-                date: "Recién ahora"
-            };
-
-            agregarPostAlFeed(nuevoPost, true);
-            document.getElementById('postContent').value = "";
-        }
-
-        function agregarPostAlFeed(post, alInicio = false) {
-            const container = document.getElementById('feed-container');
-            const initials = post.user.substring(0, 2).toUpperCase();
-            
-            const html = `
-                <div class="post-card">
-                    <div class="post-header">
-                        <div class="avatar">${initials}</div>
-                        <div>
-                            <p style="font-weight:600;">${post.user} <i class="fas fa-check-circle" style="color:var(--brand-light); font-size:12px;"></i></p>
-                            <p style="font-size:12px; opacity:0.5;">${post.date}</p>
-                        </div>
-                    </div>
-                    <div class="post-body">
-                        ${post.text}
-                    </div>
-                    <div class="post-actions">
-                        <span class="action-item"><i class="far fa-heart"></i> 0</span>
-                        <span class="action-item"><i class="far fa-comment"></i> 0</span>
-                        <span class="action-item"><i class="fas fa-retweet"></i></span>
-                        <span class="action-item"><i class="far fa-share-square"></i></span>
-                    </div>
-                </div>
-            `;
-
-            if (alInicio) container.insertAdjacentHTML('afterbegin', html);
-            else container.innerHTML += html;
-        }
-
-        function cargarFeed() {
-            // Posts de ejemplo para que no se vea vacío
-            const ejemplos = [
-                { user: "Admin", text: "¡Bienvenidos a la red Social Nexus! Creada con Supabase y mucho empeño.", date: "Hace 2 horas" },
-                { user: "Sistema", text: "Recuerda seguir las reglas de la comunidad.", date: "Hace 5 horas" }
-            ];
-            ejemplos.forEach(p => agregarPostAlFeed(p));
-        }
-
-        function cerrarSesion() {
-            localStorage.removeItem('nexus_user');
-            location.reload();
-        }
-
-        // Persistencia
-        const savedUser = localStorage.getItem('nexus_user');
-        if (savedUser) entrarApp(savedUser);
-
-    </script>
 </body>
 </html>
