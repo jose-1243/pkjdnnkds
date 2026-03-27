@@ -3,510 +3,855 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXUS SOCIAL | OS EDITION</title>
+    <title>NEXUS OS | THE ULTIMATE SOCIAL PLATFORM</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100;300;400;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
     <style>
-        /* --- SISTEMA DE VARIABLES NEXUS --- */
-        :root { 
-            --primary: #7c3aed; 
-            --primary-light: #a78bfa;
-            --primary-hover: #6d28d9;
-            --bg: #0b0f1a; 
-            --card: #161b2c; 
-            --card-light: #1f2937;
-            --border: rgba(255,255,255,0.1);
-            --text-main: #ffffff;
+        /* =========================================
+           SISTEMA DE DISEÑO NEXUS QUANTUM
+           ========================================= */
+        :root {
+            /* Palette Core */
+            --primary: #8b5cf6;
+            --primary-rgb: 139, 92, 246;
+            --primary-dark: #6d28d9;
+            --secondary: #ec4899;
+            --accent: #06b6d4;
+            
+            /* Dark Mode Engine */
+            --bg-deep: #030712;
+            --bg-main: #0b0f1a;
+            --card-bg: rgba(22, 27, 44, 0.7);
+            --card-hover: rgba(31, 41, 55, 0.9);
+            
+            /* Borders & Glass */
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-shine: rgba(255, 255, 255, 0.03);
+            --border-radius-xl: 32px;
+            --border-radius-lg: 24px;
+            --border-radius-md: 16px;
+            
+            /* Typography */
+            --text-main: #f9fafb;
             --text-dim: #94a3b8;
+            --text-muted: #64748b;
+            
+            /* Status */
             --success: #10b981;
+            --warning: #f59e0b;
             --danger: #ef4444;
-            --shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+            
+            /* Elevation */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+            --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
-        /* --- RESET & BASE --- */
-        * { box-sizing: border-box; margin: 0; padding: 0; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
-        body { 
-            font-family: 'Outfit', sans-serif; 
-            background: var(--bg); 
-            color: var(--text-main); 
-            line-height: 1.6; 
-            overflow-x: hidden;
+        /* Reset Maestro */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-deep);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(var(--primary-rgb), 0.15) 0, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.1) 0, transparent 50%);
+            color: var(--text-main);
+            line-height: 1.5;
+            overflow: hidden; /* Controlado por el motor de scroll interno */
             height: 100vh;
+            width: 100vw;
         }
 
-        /* --- SCROLLBAR --- */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: var(--bg); }
-        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
-
-        /* --- AUTH SCREEN --- */
-        #auth-screen { 
-            height: 100vh; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            background: radial-gradient(circle at top right, #1e1b4b, #0b0f1a); 
-            position: fixed; width: 100%; z-index: 1000;
+        /* Custom Scrollbar Engine */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-deep); }
+        ::-webkit-scrollbar-thumb { 
+            background: var(--glass-border); 
+            border-radius: 10px;
+            border: 2px solid var(--bg-deep);
         }
-        .auth-card { 
-            background: var(--card); 
-            padding: 45px; 
-            border-radius: 32px; 
-            width: 100%; 
-            max-width: 420px; 
-            border: 1px solid var(--border); 
-            box-shadow: 0 30px 60px -12px rgba(0,0,0,0.6); 
-            text-align: center;
-            animation: fadeIn 0.6s ease;
-        }
-        .logo-area h1 { 
-            font-size: 3rem; 
-            font-weight: 800; 
-            letter-spacing: -2px; 
-            background: linear-gradient(to right, var(--primary-light), var(--primary)); 
-            -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent; 
-        }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
 
-        .tabs-auth { display: flex; gap: 10px; margin: 30px 0; background: rgba(0,0,0,0.3); padding: 6px; border-radius: 18px; }
-        .tab-a { flex: 1; padding: 12px; border: none; background: none; color: var(--text-dim); cursor: pointer; border-radius: 12px; font-weight: 700; }
-        .tab-a.active { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4); }
+        /* =========================================
+           COMPONENTES ATÓMICOS
+           ========================================= */
 
-        input, textarea { 
-            width: 100%; padding: 16px; margin-bottom: 15px; 
-            background: rgba(15, 23, 42, 0.7); 
-            border: 1px solid var(--border); 
-            border-radius: 14px; color: white; font-size: 1rem; 
-            font-family: inherit;
-        }
-        input:focus, textarea:focus { border-color: var(--primary); outline: none; background: rgba(15, 23, 42, 0.9); box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2); }
-
-        .btn { 
-            width: 100%; padding: 16px; background: var(--primary); border: none; 
-            border-radius: 14px; color: white; font-weight: 700; cursor: pointer; 
-            font-size: 1rem; display: flex; justify-content: center; align-items: center; gap: 10px;
-        }
-        .btn:hover { background: var(--primary-hover); transform: translateY(-3px); box-shadow: 0 10px 20px rgba(124, 58, 237, 0.3); }
-        .btn:active { transform: translateY(0); }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        /* --- APP LAYOUT --- */
-        #main-app { display: none; display: grid; grid-template-columns: 280px 1fr 320px; max-width: 1400px; margin: 0 auto; height: 100vh; gap: 20px; }
-
-        /* --- SIDEBAR --- */
-        nav.sidebar { padding: 30px; display: flex; flex-direction: column; border-right: 1px solid var(--border); }
-        .nav-item { 
-            display: flex; align-items: center; gap: 15px; padding: 15px 20px; 
-            border-radius: 16px; color: var(--text-dim); cursor: pointer; 
-            font-weight: 600; margin-bottom: 5px; text-decoration: none;
-        }
-        .nav-item:hover, .nav-item.active { background: rgba(124, 58, 237, 0.1); color: var(--primary-light); }
-        .nav-item i { font-size: 1.2rem; }
-
-        /* --- FEED & CONTENT --- */
-        main.content { padding: 20px 0; overflow-y: auto; scroll-behavior: smooth; }
-        .view-section { display: none; animation: fadeIn 0.4s ease; }
-        .view-section.active { display: block; }
-
-        .header-sticky { 
-            position: sticky; top: 0; background: rgba(11, 15, 26, 0.8); 
-            backdrop-filter: blur(12px); padding: 15px 0; z-index: 10; 
-            margin-bottom: 20px; border-bottom: 1px solid var(--border);
-        }
-
-        /* --- POSTS --- */
-        .post-creator { background: var(--card); padding: 25px; border-radius: 24px; border: 1px solid var(--border); margin-bottom: 30px; box-shadow: var(--shadow); }
-        .feed-item { 
-            background: var(--card); padding: 25px; border-radius: 24px; 
-            border: 1px solid var(--border); margin-bottom: 20px; 
-            position: relative; animation: slideUp 0.5s ease;
-        }
-        .feed-item:hover { border-color: rgba(124, 58, 237, 0.3); transform: scale(1.01); }
+        /* Inputs de Alta Gama */
+        .nexus-input-group { position: relative; margin-bottom: 20px; width: 100%; }
         
-        .post-img { width: 100%; border-radius: 16px; margin-top: 15px; border: 1px solid var(--border); max-height: 400px; object-fit: cover; }
-
-        /* --- UI COMPONENTS --- */
-        .avatar { 
-            width: 48px; height: 48px; border-radius: 14px; 
-            background: linear-gradient(135deg, var(--primary), #4c1d95); 
-            display: flex; justify-content: center; align-items: center; 
-            font-weight: 800; color: white; font-size: 1.2rem;
-        }
-        .avatar.small { width: 32px; height: 32px; font-size: 0.8rem; border-radius: 8px; }
-
-        .badge { background: var(--primary); color: white; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; }
-
-        /* --- MODALES --- */
-        .modal-overlay { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); 
-            z-index: 2000; display: none; justify-content: center; align-items: center; 
-        }
-        .modal-content { 
-            background: var(--card); border: 1px solid var(--border); 
-            border-radius: 32px; width: 90%; max-width: 500px; padding: 40px; 
-            position: relative; box-shadow: var(--shadow);
+        .nexus-input {
+            width: 100%;
+            padding: 16px 20px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius-md);
+            color: white;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* --- TOASTS --- */
-        #toast-container { position: fixed; bottom: 30px; right: 30px; z-index: 3000; }
-        .toast { 
-            background: var(--card); border-left: 4px solid var(--primary); 
-            padding: 15px 25px; border-radius: 12px; margin-top: 10px; 
-            box-shadow: 0 10px 20px rgba(0,0,0,0.4); display: flex; 
-            align-items: center; gap: 12px; animation: slideLeft 0.3s ease;
+        .nexus-input:focus {
+            border-color: var(--primary);
+            background: rgba(15, 23, 42, 0.8);
+            box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.15);
+            transform: translateY(-1px);
         }
 
-        /* --- ANIMACIONES --- */
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes slideLeft { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        /* Botones Pro */
+        .nexus-btn {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 14px 28px;
+            border-radius: var(--border-radius-md);
+            border: none;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
 
-        /* --- MESSAGES VIEW --- */
-        .chat-container { display: grid; grid-template-columns: 200px 1fr; height: 70vh; background: var(--card); border-radius: 24px; border: 1px solid var(--border); overflow: hidden; }
-        .chat-list { border-right: 1px solid var(--border); overflow-y: auto; }
-        .chat-main { display: flex; flex-direction: column; }
-        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .msg { padding: 10px 15px; border-radius: 14px; max-width: 80%; font-size: 0.9rem; }
-        .msg.sent { background: var(--primary); align-self: flex-end; color: white; }
-        .msg.received { background: var(--card-light); align-self: flex-start; }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            box-shadow: 0 10px 20px -5px rgba(var(--primary-rgb), 0.4);
+        }
 
-        /* --- RESPONSIVE --- */
-        @media (max-width: 1100px) { #main-app { grid-template-columns: 80px 1fr 0px; } .nav-text, .sidebar-right { display: none; } }
+        .btn-primary:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 30px -5px rgba(var(--primary-rgb), 0.6);
+        }
+
+        /* =========================================
+           LAYOUT: AUTH ENGINE
+           ========================================= */
+        #auth-engine {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            background: var(--bg-deep);
+        }
+
+        .auth-portal {
+            width: 100%;
+            max-width: 450px;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius-xl);
+            padding: 50px;
+            box-shadow: var(--shadow-xl);
+            text-align: center;
+            position: relative;
+        }
+
+        .auth-logo {
+            font-size: 3.5rem;
+            font-weight: 900;
+            letter-spacing: -3px;
+            margin-bottom: 10px;
+            background: linear-gradient(to bottom right, #fff, var(--primary-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* =========================================
+           LAYOUT: MAIN APPLICATION
+           ========================================= */
+        #nexus-app-root {
+            display: none; /* Se activa vía JS */
+            height: 100vh;
+            grid-template-columns: 280px 1fr 350px;
+            gap: 0;
+            opacity: 0;
+        }
+
+        /* Sidebar Navigation */
+        .nexus-nav {
+            background: rgba(3, 7, 18, 0.5);
+            border-right: 1px solid var(--glass-border);
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-brand {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 50px;
+            padding-left: 15px;
+            color: var(--primary);
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 16px 20px;
+            border-radius: var(--border-radius-md);
+            color: var(--text-dim);
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(var(--primary-rgb), 0.1);
+            color: var(--primary);
+        }
+
+        .nav-link i { font-size: 1.25rem; }
+
+        /* Main Feed View */
+        .nexus-viewport {
+            height: 100vh;
+            overflow-y: scroll;
+            padding: 0 40px;
+            scroll-behavior: smooth;
+        }
+
+        .viewport-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(11, 15, 26, 0.8);
+            backdrop-filter: blur(15px);
+            padding: 25px 0;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        /* Feed Cards */
+        .nexus-card {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius-lg);
+            padding: 30px;
+            margin-bottom: 25px;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .nexus-card:hover {
+            border-color: rgba(var(--primary-rgb), 0.3);
+            background: var(--card-hover);
+        }
+
+        /* Avatar Engine */
+        .avatar-ring {
+            position: relative;
+            padding: 3px;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            border-radius: 18px;
+            display: inline-block;
+        }
+
+        .avatar-box {
+            width: 50px; height: 50px;
+            background: var(--bg-main);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: white;
+        }
+
+        /* Right Sidebar Widgets */
+        .nexus-widgets {
+            border-left: 1px solid var(--glass-border);
+            padding: 40px 30px;
+            background: rgba(3, 7, 18, 0.3);
+        }
+
+        .widget-box {
+            background: var(--card-bg);
+            border-radius: var(--border-radius-md);
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--glass-border);
+        }
+
+        /* =========================================
+           MODAL SYSTEM & TOASTS
+           ========================================= */
+        .nexus-toast-container {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            z-index: 10000;
+        }
+
+        .nexus-toast {
+            background: var(--card-bg);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            padding: 16px 24px;
+            border-radius: var(--border-radius-md);
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: var(--shadow-lg);
+            animation: slideInLeft 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes slideInLeft {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
     </style>
 </head>
 <body>
 
-    <div id="toast-container"></div>
+    <div id="toast-master" class="nexus-toast-container"></div>
 
-    <div id="auth-screen">
-        <div class="auth-card">
-            <div class="logo-area">
-                <h1>NEXUS</h1>
-                <p style="color: var(--text-dim); margin-top: -10px; font-weight: 600;">System OS v3.0</p>
+    <div id="auth-engine">
+        <div class="auth-portal">
+            <div class="auth-logo">NEXUS</div>
+            <p style="color: var(--text-dim); margin-bottom: 40px; font-weight: 500;">Inicia sesión en la red del futuro</p>
+            
+            <div class="nexus-input-group">
+                <input type="text" id="user-core" class="nexus-input" placeholder="Nombre de usuario">
             </div>
-            <div class="tabs-auth">
-                <button id="t-login" class="tab-a active" onclick="setMode('login')">LOGIN</button>
-                <button id="t-reg" class="tab-a" onclick="setMode('reg')">JOIN</button>
+            
+            <div class="nexus-input-group">
+                <input type="password" id="pass-core" class="nexus-input" placeholder="Contraseña de acceso">
             </div>
-            <div id="auth-form">
-                <input type="text" id="auth-user" placeholder="Username">
-                <input type="password" id="auth-pass" placeholder="Password">
-                <button class="btn" onclick="execAuth()" id="mainBtn">
-                    <span>CONECTAR AL NÉXU</span> <i class="fas fa-bolt"></i>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px;">
+                <button onclick="handleAuth('login')" class="nexus-btn btn-primary" id="btn-login-main">
+                    ENTRAR <i class="fas fa-sign-in-alt"></i>
+                </button>
+                <button onclick="handleAuth('signup')" class="nexus-btn" style="background: rgba(255,255,255,0.05); color: white;">
+                    REGISTRO
                 </button>
             </div>
-            <div id="status" style="margin-top:20px; font-size: 14px; min-height: 20px;"></div>
+            
+            <div id="auth-loader" style="display: none; margin-top: 25px;">
+                <i class="fas fa-circle-notch fa-spin" style="color: var(--primary)"></i>
+            </div>
         </div>
     </div>
 
-    <div id="main-app">
+    <div id="nexus-app-root">
         
-        <nav class="sidebar">
-            <div class="logo-area" style="margin-bottom: 40px; padding-left: 20px;">
-                <h2 style="font-weight: 800; letter-spacing: -1px; color: var(--primary-light)">NEXUS.</h2>
-            </div>
+        <nav class="nexus-nav">
+            <div class="nav-brand">NEXUS.</div>
             
-            <a class="nav-item active" onclick="switchView('home', this)">
-                <i class="fas fa-home"></i> <span class="nav-text">Inicio</span>
+            <a href="#" class="nav-link active" onclick="navTo('feed', this)">
+                <i class="fas fa-th-large"></i> Global Feed
             </a>
-            <a class="nav-item" onclick="switchView('explore', this)">
-                <i class="fas fa-hashtag"></i> <span class="nav-text">Explorar</span>
+            <a href="#" class="nav-link" onclick="navTo('explore', this)">
+                <i class="fas fa-compass"></i> Explorar
             </a>
-            <a class="nav-item" onclick="switchView('messages', this)">
-                <i class="fas fa-envelope"></i> <span class="nav-text">Mensajes</span> <span class="badge" id="msg-count">0</span>
+            <a href="#" class="nav-link" onclick="navTo('messages', this)">
+                <i class="fas fa-comment-alt"></i> Mensajería
             </a>
-            <a class="nav-item" onclick="switchView('profile', this)">
-                <i class="fas fa-user"></i> <span class="nav-text">Perfil</span>
+            <a href="#" class="nav-link" onclick="navTo('profile', this)">
+                <i class="fas fa-user-circle"></i> Mi Perfil
             </a>
-            
-            <div style="margin-top: auto; padding: 20px;">
-                <button class="btn" style="background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2);" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i> <span class="nav-text">SALIR</span>
+            <a href="#" class="nav-link" onclick="navTo('security', this)">
+                <i class="fas fa-shield-alt"></i> Seguridad
+            </a>
+
+            <div style="margin-top: auto;">
+                <div class="widget-box" style="padding: 15px; margin-bottom: 25px;">
+                    <div style="display:flex; align-items:center; gap:12px">
+                        <div class="avatar-ring">
+                            <div class="avatar-box" id="current-user-avatar" style="width:35px; height:35px; font-size:0.9rem">S</div>
+                        </div>
+                        <div style="overflow:hidden">
+                            <p id="current-user-name" style="font-weight:700; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Usuario</p>
+                            <p style="font-size:0.7rem; color:var(--success)">● Online</p>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="systemLogout()" class="nexus-btn" style="width:100%; background:rgba(239, 68, 68, 0.1); color:var(--danger)">
+                    DESCONECTAR <i class="fas fa-power-off"></i>
                 </button>
             </div>
         </nav>
 
-        <main class="content">
+        <main class="nexus-viewport" id="viewport">
             
-            <section id="view-home" class="view-section active">
-                <div class="header-sticky">
-                    <h2 style="font-weight: 800;">FEED GLOBAL</h2>
-                </div>
+            <div id="view-feed" class="view-content">
+                <header class="viewport-header">
+                    <h1 style="font-weight: 900; letter-spacing: -1.5px; font-size: 2.2rem;">STREAMING <span style="color: var(--primary)">GLOBAL</span></h1>
+                </header>
 
-                <div class="post-creator">
-                    <textarea id="postInput" placeholder="¿Qué estás pensando, Sergi? (Usa links de imágenes para previsualizarlas)"></textarea>
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div style="color: var(--text-dim); font-size: 0.8rem;">
-                            <i class="fas fa-globe-americas"></i> Público
+                <div class="nexus-card" style="border-style: dashed; background: rgba(var(--primary-rgb), 0.05);">
+                    <textarea id="post-input-main" class="nexus-input" style="min-height: 100px; margin-bottom: 15px; background: transparent; border: none; font-size: 1.2rem;" placeholder="¿Qué estás codificando hoy, Sergio?"></textarea>
+                    <div style="display:flex; justify-content:space-between; align-items:center">
+                        <div style="display:flex; gap:15px; color:var(--text-dim)">
+                            <i class="fas fa-image" style="cursor:pointer"></i>
+                            <i class="fas fa-link" style="cursor:pointer"></i>
+                            <i class="fas fa-code" style="cursor:pointer"></i>
                         </div>
-                        <button class="btn" id="btnPublicar" style="width: 140px; padding: 12px;" onclick="publicarPost()">
-                            Publicar <i class="fas fa-paper-plane"></i>
+                        <button onclick="dispatchPost()" class="nexus-btn btn-primary" id="btn-post" style="padding: 10px 30px;">
+                            PUBLICAR <i class="fas fa-paper-plane"></i>
                         </button>
                     </div>
                 </div>
 
-                <div id="feed-container">
+                <div id="feed-render-engine">
                     </div>
-            </section>
+            </div>
 
-            <section id="view-explore" class="view-section">
-                <div class="header-sticky">
-                    <h2 style="font-weight: 800;">EXPLORAR NÉXUS</h2>
-                </div>
-                <input type="text" id="searchUser" placeholder="Buscar usuarios..." oninput="filtrarUsuarios()">
-                <div id="users-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div id="view-profile" class="view-content" style="display:none">
+                <header class="viewport-header">
+                    <h1 style="font-weight: 900;">AJUSTES DE <span style="color: var(--primary)">PERFIL</span></h1>
+                </header>
+                
+                <div class="nexus-card">
+                    <h3 style="margin-bottom: 20px;">Seguridad de la Cuenta</h3>
+                    <div class="nexus-input-group">
+                        <label style="display:block; margin-bottom:8px; color:var(--text-dim)">Nueva Contraseña</label>
+                        <input type="password" id="profile-new-pass" class="nexus-input" placeholder="********">
                     </div>
-            </section>
-
-            <section id="view-messages" class="view-section">
-                <div class="header-sticky">
-                    <h2 style="font-weight: 800;">MENSAJES DIRECTOS</h2>
-                </div>
-                <div class="chat-container">
-                    <div class="chat-list" id="chat-list-ui">
-                        </div>
-                    <div class="chat-main">
-                        <div class="chat-messages" id="chat-window">
-                            <p style="text-align: center; color: var(--text-dim); margin-top: 100px;">Selecciona un chat para comenzar</p>
-                        </div>
-                        <div style="padding: 15px; display: flex; gap: 10px;">
-                            <input type="text" id="msg-input" placeholder="Escribe un mensaje..." style="margin: 0;">
-                            <button class="btn" style="width: 60px;" onclick="enviarMensaje()"><i class="fas fa-location-arrow"></i></button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section id="view-profile" class="view-section">
-                <div class="header-sticky">
-                    <h2 style="font-weight: 800;">MI PERFIL</h2>
-                </div>
-                <div class="post-creator" style="text-align: center;">
-                    <div class="avatar" style="width: 100px; height: 100px; font-size: 3rem; margin: 0 auto 20px;" id="p-avatar">S</div>
-                    <h1 id="p-username" style="font-weight: 800; font-size: 2rem;">Username</h1>
-                    <p id="p-bio" style="color: var(--text-dim); margin-bottom: 20px;">Sin biografía...</p>
-                    
-                    <div style="display: flex; justify-content: center; gap: 30px; margin: 20px 0; border-top: 1px solid var(--border); padding-top: 20px;">
-                        <div><h3 id="p-count">0</h3><small style="color: var(--text-dim)">POSTS</small></div>
-                        <div><h3 id="p-date">2026</h3><small style="color: var(--text-dim)">UNIDO</small></div>
-                    </div>
-
-                    <textarea id="editBio" placeholder="Actualiza tu biografía..." style="min-height: 60px;"></textarea>
-                    <button class="btn" onclick="guardarBio()">ACTUALIZAR PERFIL</button>
-                </div>
-            </section>
-        </main>
-
-        <aside class="sidebar-right" style="padding: 30px; border-left: 1px solid var(--border);">
-            <div class="post-creator" style="padding: 20px;">
-                <h4 style="margin-bottom: 15px;">Tendencias</h4>
-                <div style="font-size: 0.9rem; color: var(--text-dim); display: flex; flex-direction: column; gap: 10px;">
-                    <p>#Python313 <br><small>1.2k posts</small></p>
-                    <p>#SupabaseRealtime <br><small>850 posts</small></p>
-                    <p>#NexusOS <br><small>400 posts</small></p>
+                    <button onclick="updateSecurity()" class="nexus-btn btn-primary">ACTUALIZAR CREDENCIALES</button>
                 </div>
             </div>
-            
-            <div class="post-creator" style="padding: 20px; background: linear-gradient(var(--card), #1e1b4b);">
-                <h4>Nexus Pro</h4>
-                <p style="font-size: 0.8rem; margin: 10px 0;">Obtén verificación y soporte prioritario.</p>
-                <button class="btn" style="padding: 8px; font-size: 0.8rem;">MEJORAR</button>
+
+        </main>
+
+        <aside class="nexus-widgets">
+            <div class="nexus-input-group">
+                <i class="fas fa-search" style="position:absolute; left:15px; top:18px; color:var(--text-muted)"></i>
+                <input type="text" class="nexus-input" style="padding-left:45px;" placeholder="Buscar en el Nexo...">
+            </div>
+
+            <div class="widget-box">
+                <h4 style="margin-bottom:15px; color:var(--primary)">TENDENCIAS</h4>
+                <div style="display:flex; flex-direction:column; gap:12px">
+                    <div style="cursor:pointer">
+                        <p style="font-size:0.75rem; color:var(--text-muted)">Desarrollo</p>
+                        <p style="font-weight:700">#Python313</p>
+                    </div>
+                    <div style="cursor:pointer">
+                        <p style="font-size:0.75rem; color:var(--text-muted)">Seguridad</p>
+                        <p style="font-weight:700">#NetworkStress</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="widget-box" style="background: linear-gradient(rgba(var(--primary-rgb), 0.1), transparent);">
+                <h4 style="margin-bottom:10px;">ESTADÍSTICAS</h4>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
+                    <div style="background:rgba(0,0,0,0.2); padding:10px; border-radius:10px; text-align:center">
+                        <p style="font-size:1.2rem; font-weight:800; color:var(--primary)">2.4k</p>
+                        <p style="font-size:0.6rem; color:var(--text-dim)">ALCANCE</p>
+                    </div>
+                    <div style="background:rgba(0,0,0,0.2); padding:10px; border-radius:10px; text-align:center">
+                        <p style="font-size:1.2rem; font-weight:800; color:var(--accent)">156</p>
+                        <p style="font-size:0.6rem; color:var(--text-dim)">POSTS</p>
+                    </div>
+                </div>
             </div>
         </aside>
 
     </div>
-
-    <div id="modal-container" class="modal-overlay" onclick="if(event.target == this) closeModal()">
-        <div class="modal-content" id="modal-body">
-            </div>
-    </div>
-
     <script>
-        // --- CONFIGURACIÓN CORE ---
-        const SB_URL = "https://cmqgzwgqvpxuzmivxjcp.supabase.co";
-        const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtcWd6d2dxdnB4dXptaXZ4amNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NDk0NzQsImV4cCI6MjA5MDEyNTQ3NH0.yxukU3-y26DNLdCfEymPNgUSGmHorhuQNPng_fEkWOo";
-        const db = supabase.createClient(SB_URL, SB_KEY);
+    /* =========================================
+       NEXUS CORE CONFIGURATION
+       ========================================= */
+    const NEXUS_CONFIG = {
+        URL: "https://cmqgzwgqvpxuzmivxjcp.supabase.co",
+        KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtcWd6d2dxdnB4dXptaXZ4amNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NDk0NzQsImV4cCI6MjA5MDEyNTQ3NH0.yxukU3-y26DNLdCfEymPNgUSGmHorhuQNPng_fEkWOo",
+        TABLE_USERS: 'usuarios',
+        TABLE_POSTS: 'posts',
+        TABLE_MSG: 'mensajes',
+        VERSION: '4.0.2-Stable'
+    };
 
-        let currentUser = null;
-        let currentMode = 'login';
-        let allUsers = [];
-        let activeChat = null;
+    const db = supabase.createClient(NEXUS_CONFIG.URL, NEXUS_CONFIG.KEY);
+    
+    // Estado Global de la Aplicación
+    let SESSION_USER = null;
+    let APP_STATE = {
+        isLive: false,
+        activeTab: 'feed',
+        cache: { posts: [], users: [] },
+        lastFetch: null
+    };
 
-        // --- MANEJO DE ESTADO SPA ---
-        function setMode(m) {
-            currentMode = m;
-            document.getElementById('t-login').classList.toggle('active', m === 'login');
-            document.getElementById('t-reg').classList.toggle('active', m === 'reg');
-            document.getElementById('mainBtn').innerHTML = m === 'login' ? 'CONECTAR AL NÉXUS <i class="fas fa-bolt"></i>' : 'CREAR IDENTIDAD <i class="fas fa-user-plus"></i>';
-        }
+    /* =========================================
+       MOTOR DE AUTENTICACIÓN (BIO-SYNC)
+       ========================================= */
+    async function handleAuth(type) {
+        const u = document.getElementById('user-core').value.trim();
+        const p = document.getElementById('pass-core').value.trim();
+        const loader = document.getElementById('auth-loader');
+        const btn = document.getElementById('btn-login-main');
 
-        function switchView(viewId, el) {
-            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-            document.getElementById(`view-${viewId}`).classList.add('active');
+        if (!u || !p) return pushToast("⚠️ Error: Campos incompletos", "danger");
+
+        loader.style.display = 'block';
+        btn.disabled = true;
+
+        try {
+            if (type === 'signup') {
+                const { error } = await db.from(NEXUS_CONFIG.TABLE_USERS).insert([{ 
+                    username: u, 
+                    password: p,
+                    created_at: new Date().toISOString() 
+                }]);
+                if (error) throw error;
+                pushToast("✅ Registro exitoso. Iniciando...", "success");
+            }
+
+            const { data, error } = await db.from(NEXUS_CONFIG.TABLE_USERS).select('*');
+            if (error) throw error;
+
+            const user = data.find(x => x.username.toLowerCase() === u.toLowerCase() && x.password === p);
             
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            if(el) el.classList.add('active');
-
-            if(viewId === 'profile') cargarDatosPerfil();
-            if(viewId === 'explore') cargarListaUsuarios();
-        }
-
-        // --- AUTENTICACIÓN AVANZADA ---
-        async function execAuth() {
-            const u = document.getElementById('auth-user').value.trim();
-            const p = document.getElementById('auth-pass').value.trim();
-            const status = document.getElementById('status');
-            
-            if(!u || !p) return showToast("⚠️ Completa los campos", "danger");
-
-            if(currentMode === 'reg') {
-                status.innerHTML = "🌀 Generando ADN Digital...";
-                const { error } = await db.from('usuarios').insert([{ username: u, password: p, bio: '', joined: new Date().toISOString() }]);
-                if(error) status.innerHTML = "❌ " + error.message;
-                else { showToast("✅ Cuenta creada"); setMode('login'); }
+            if (user) {
+                bootstrapApp(user.username);
             } else {
-                status.innerHTML = "⚡ Sincronizando...";
-                const { data, error } = await db.from('usuarios').select('*');
-                const user = data?.find(x => x.username.toLowerCase() === u.toLowerCase() && x.password === p);
-                if(user) iniciarSistema(user.username);
-                else status.innerHTML = "❌ Acceso denegado";
+                pushToast("❌ Acceso denegado: Credenciales inválidas", "danger");
+            }
+        } catch (err) {
+            console.error("Auth Error:", err);
+            pushToast(`❌ Error de Sistema: ${err.message}`, "danger");
+        } finally {
+            loader.style.display = 'none';
+            btn.disabled = false;
+        }
+    }
+
+    function bootstrapApp(username) {
+        SESSION_USER = username;
+        localStorage.setItem('nexus_session_token', btoa(username));
+        
+        // Animación de Entrada con GSAP
+        gsap.to("#auth-engine", { duration: 0.8, y: -1000, ease: "expo.inOut", onComplete: () => {
+            document.getElementById('auth-engine').style.display = 'none';
+            const root = document.getElementById('nexus-app-root');
+            root.style.display = 'grid';
+            gsap.to(root, { duration: 0.5, opacity: 1 });
+        }});
+
+        document.getElementById('current-user-name').innerText = username;
+        document.getElementById('current-user-avatar').innerText = username.charAt(0).toUpperCase();
+        
+        initDataPipelines();
+    }
+
+    /* =========================================
+       SISTEMA DE NAVEGACIÓN DINÁMICA
+       ========================================= */
+    function navTo(view, element) {
+        APP_STATE.activeTab = view;
+        
+        // UI Reset
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        element.classList.add('active');
+
+        // View Swapping
+        document.querySelectorAll('.view-content').forEach(v => v.style.display = 'none');
+        const targetView = document.getElementById(`view-${view}`);
+        if (targetView) {
+            targetView.style.display = 'block';
+            gsap.from(targetView, { duration: 0.4, y: 20, opacity: 0 });
+        } else {
+            pushToast(`🚧 Módulo '${view}' en desarrollo`, "warning");
+        }
+
+        if (view === 'profile') syncProfileData();
+    }
+
+    /* =========================================
+       PIPELINES DE DATOS (FEED & REALTIME)
+       ========================================= */
+    async function initDataPipelines() {
+        await refreshFeed();
+        
+        // Suscripción Realtime Pro
+        db.channel('nexus-live-sync')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: NEXUS_CONFIG.TABLE_POSTS }, payload => {
+                injectPost(payload.new, true);
+                pushToast(`📢 Nuevo post de ${payload.new.autor}`, "primary");
+            })
+            .on('postgres_changes', { event: 'DELETE', schema: 'public', table: NEXUS_CONFIG.TABLE_POSTS }, payload => {
+                const el = document.getElementById(`post-node-${payload.old.id}`);
+                if (el) gsap.to(el, { duration: 0.3, scale: 0, opacity: 0, onComplete: () => el.remove() });
+            })
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: NEXUS_CONFIG.TABLE_POSTS }, payload => {
+                updatePostUI(payload.new);
+            })
+            .subscribe();
+    }
+
+    async function refreshFeed() {
+        const container = document.getElementById('feed-render-engine');
+        container.innerHTML = '<div style="text-align:center; padding:50px"><i class="fas fa-spinner fa-spin fa-2x"></i></div>';
+        
+        const { data, error } = await db.from(NEXUS_CONFIG.TABLE_POSTS)
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) return pushToast("❌ Error al sincronizar feed", "danger");
+        
+        container.innerHTML = '';
+        data.forEach(post => injectPost(post));
+        APP_STATE.cache.posts = data;
+    }
+
+    /* =========================================
+       SISTEMA DE TOASTS PROFESIONAL
+       ========================================= */
+    function pushToast(msg, type = 'primary') {
+        const container = document.getElementById('toast-master');
+        const toast = document.createElement('div');
+        toast.className = `nexus-toast toast-${type}`;
+        
+        const icons = {
+            primary: 'fa-info-circle',
+            success: 'fa-check-circle',
+            warning: 'fa-exclamation-triangle',
+            danger: 'fa-times-circle'
+        };
+
+        toast.innerHTML = `
+            <i class="fas ${icons[type]}" style="color: var(--${type})"></i>
+            <span style="font-weight:600; font-size:0.9rem">${msg}</span>
+        `;
+
+        container.appendChild(toast);
+        
+        // Auto-remove con animación
+        setTimeout(() => {
+            gsap.to(toast, { duration: 0.5, x: 200, opacity: 0, onComplete: () => toast.remove() });
+        }, 4000);
+    }
+
+    /* =========================================
+       SEGURIDAD Y SESIÓN
+       ========================================= */
+    function systemLogout() {
+        localStorage.removeItem('nexus_session_token');
+        location.reload();
+    }
+
+    // Persistencia de Sesión al Inicio
+    window.addEventListener('DOMContentLoaded', () => {
+        const token = localStorage.getItem('nexus_session_token');
+        if (token) {
+            try {
+                const user = atob(token);
+                bootstrapApp(user);
+            } catch(e) {
+                localStorage.removeItem('nexus_session_token');
             }
         }
+    });
+/* =========================================
+       ENGINE: RENDERIZADO DE POSTS (UI)
+       ========================================= */
+    function injectPost(post, atTop = false) {
+        const container = document.getElementById('feed-render-engine');
+        
+        // Evitar duplicados por ID
+        if (document.getElementById(`post-node-${post.id}`)) return;
 
-        function iniciarSistema(username) {
-            currentUser = username;
-            localStorage.setItem('nexus_user', username);
-            document.getElementById('auth-screen').style.display = 'none';
-            document.getElementById('main-app').style.display = 'grid';
-            showToast(`Bienvenido de nuevo, ${username}`);
-            
-            cargarTodo();
-            conectarRealtime();
+        // Detector de Media (Imágenes/Links)
+        const imgRegex = /(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp|svg))/i;
+        const hasImg = post.texto.match(imgRegex);
+        const textContent = post.texto.replace(imgRegex, '').trim();
+        
+        const isOwner = post.autor === SESSION_USER;
+        const postDate = new Date(post.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+        const postHTML = `
+            <div class="nexus-card" id="post-node-${post.id}" style="opacity: 0; transform: translateY(20px)">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:15px">
+                    <div style="display:flex; align-items:center; gap:12px">
+                        <div class="avatar-ring">
+                            <div class="avatar-box" style="width:40px; height:40px; font-size:0.9rem">
+                                ${post.autor.charAt(0).toUpperCase()}
+                            </div>
+                        </div>
+                        <div>
+                            <p style="font-weight:700; font-size:0.95rem">${post.autor} 
+                                ${post.autor === 'Sergio' ? '<i class="fas fa-check-circle" style="color:var(--primary); font-size:0.7rem"></i>' : ''}
+                            </p>
+                            <p style="font-size:0.7rem; color:var(--text-muted)">${postDate} • Global</p>
+                        </div>
+                    </div>
+                    ${isOwner ? `
+                        <button onclick="confirmDelete(${post.id})" class="nexus-btn" style="background:none; color:var(--text-muted); padding:5px; box-shadow:none">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                    ` : ''}
+                </div>
+
+                <div style="font-size:1.05rem; line-height:1.6; color:var(--text-main); margin-bottom:15px; word-wrap: break-word;">
+                    ${textContent || (hasImg ? '' : '<span style="color:var(--text-muted); font-style:italic;">Sin texto...</span>')}
+                </div>
+
+                ${hasImg ? `
+                    <div style="border-radius:15px; overflow:hidden; border:1px solid var(--glass-border); margin-bottom:15px; background:#000">
+                        <img src="${hasImg[0]}" style="width:100%; display:block; max-height:450px; object-fit:contain;" 
+                             onload="this.parentElement.style.background='transparent'"
+                             onerror="this.src='https://via.placeholder.com/400x200?text=Error+al+cargar+imagen'">
+                    </div>
+                ` : ''}
+
+                <div style="display:flex; gap:25px; border-top:1px solid var(--glass-border); padding-top:15px">
+                    <button onclick="handleLike(${post.id}, ${post.likes || 0})" class="nexus-btn" id="like-btn-${post.id}" 
+                            style="background:none; padding:0; color:var(--text-dim); box-shadow:none; text-transform:none">
+                        <i class="far fa-heart" id="like-icon-${post.id}"></i> 
+                        <span id="like-count-${post.id}" style="margin-left:5px; font-weight:600">${post.likes || 0}</span>
+                    </button>
+                    
+                    <button class="nexus-btn" style="background:none; padding:0; color:var(--text-dim); box-shadow:none; text-transform:none">
+                        <i class="far fa-comment"></i> <span style="margin-left:5px; font-weight:600">Discutir</span>
+                    </button>
+
+                    <button class="nexus-btn" style="background:none; padding:0; color:var(--text-dim); box-shadow:none; text-transform:none; margin-left:auto">
+                        <i class="far fa-share-square"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        if (atTop) {
+            container.insertAdjacentHTML('afterbegin', postHTML);
+        } else {
+            container.insertAdjacentHTML('beforeend', postHTML);
         }
 
-        // --- LÓGICA DE POSTS & MEDIA ---
-        async function publicarPost() {
-            const text = document.getElementById('postInput').value.trim();
-            if(!text) return;
+        // Animación de entrada con GSAP
+        gsap.to(`#post-node-${post.id}`, { duration: 0.6, opacity: 1, y: 0, ease: "power2.out" });
+    }
 
-            const btn = document.getElementById('btnPublicar');
-            btn.disabled = true;
+    /* =========================================
+       LOGIC: PUBLICAR Y GESTIONAR POSTS
+       ========================================= */
+    async function dispatchPost() {
+        const input = document.getElementById('post-input-main');
+        const btn = document.getElementById('btn-post');
+        const text = input.value.trim();
 
-            const { error } = await db.from('posts').insert([{
-                autor: currentUser,
+        if (!text) return pushToast("⚠️ El post no puede estar vacío", "warning");
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+
+        try {
+            const { error } = await db.from(NEXUS_CONFIG.TABLE_POSTS).insert([{
+                autor: SESSION_USER,
                 texto: text,
                 likes: 0,
                 created_at: new Date().toISOString()
             }]);
 
-            if(!error) {
-                document.getElementById('postInput').value = "";
-                showToast("Post enviado al Nexo");
-            }
+            if (error) throw error;
+
+            input.value = '';
+            pushToast("🚀 Sincronizado con el Nexo con éxito", "success");
+        } catch (err) {
+            pushToast(`❌ Error al publicar: ${err.message}`, "danger");
+        } finally {
             btn.disabled = false;
+            btn.innerHTML = 'PUBLICAR <i class="fas fa-paper-plane"></i>';
         }
+    }
 
-        function renderizarPost(post, alInicio = false) {
-            const container = document.getElementById('feed-container');
-            if(document.getElementById(`post-${post.id}`)) return;
+    async function handleLike(postId, currentLikes) {
+        const icon = document.getElementById(`like-icon-${postId}`);
+        const countSpan = document.getElementById(`like-count-${postId}`);
+        
+        // Optimistic Update UI
+        icon.classList.replace('far', 'fas');
+        icon.style.color = 'var(--danger)';
+        countSpan.innerText = parseInt(currentLikes) + 1;
+        gsap.from(icon, {duration:0.4, scale:1.5, ease:"back.out"});
 
-            // Detección básica de imágenes
-            const imgRegex = /(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp))/i;
-            const match = post.texto.match(imgRegex);
-            const imgHTML = match ? `<img src="${match[0]}" class="post-img" loading="lazy">` : '';
-            const textoLimpio = post.texto.replace(imgRegex, '');
+        const { error } = await db.from(NEXUS_CONFIG.TABLE_POSTS)
+            .update({ likes: currentLikes + 1 })
+            .eq('id', postId);
 
-            const esMio = post.autor === currentUser;
-            const html = `
-                <div class="feed-item" id="post-${post.id}">
-                    ${esMio ? `<button class="delete-btn" style="position:absolute; right:20px; color:var(--danger); background:none; border:none; cursor:pointer;" onclick="eliminarPost(${post.id})"><i class="fas fa-trash"></i></button>` : ''}
-                    <div class="user-meta" style="display:flex; gap:15px; align-items:center; margin-bottom:15px;">
-                        <div class="avatar small">${post.autor[0].toUpperCase()}</div>
-                        <div>
-                            <p style="font-weight:700;">${post.autor}</p>
-                            <small style="color:var(--text-dim);">${new Date(post.created_at).toLocaleTimeString()}</small>
-                        </div>
-                    </div>
-                    <div class="post-body">${textoLimpio}</div>
-                    ${imgHTML}
-                    <div class="post-actions" style="margin-top:20px; display:flex; gap:20px; border-top:1px solid var(--border); padding-top:15px;">
-                        <button class="action-btn" onclick="darLike(${post.id}, ${post.likes})">
-                            <i class="far fa-heart"></i> <span>${post.likes || 0}</span>
-                        </button>
-                        <button class="action-btn" onclick="abrirHilo(${post.id})">
-                            <i class="far fa-comment"></i> Hilo
-                        </button>
-                    </div>
-                </div>
-            `;
-            if(alInicio) container.insertAdjacentHTML('afterbegin', html);
-            else container.insertAdjacentHTML('beforeend', html);
+        if (error) {
+            pushToast("No se pudo registrar el like", "warning");
+            icon.classList.replace('fas', 'far');
+            countSpan.innerText = currentLikes;
         }
+    }
 
-        // --- SISTEMA DE CHAT ---
-        async function abrirChat(targetUser) {
-            activeChat = targetUser;
-            switchView('messages');
-            const win = document.getElementById('chat-window');
-            win.innerHTML = `<h3 style="text-align:center;">Chat con ${targetUser}</h3><div id="msg-history"></div>`;
-            cargarMensajes();
+    async function confirmDelete(postId) {
+        if (confirm("¿Seguro que quieres purgar este post del sistema?")) {
+            const { error } = await db.from(NEXUS_CONFIG.TABLE_POSTS).delete().eq('id', postId);
+            if (error) pushToast("Error al eliminar", "danger");
+            else pushToast("🧹 Post eliminado del servidor", "primary");
         }
+    }
 
-        async function enviarMensaje() {
-            const txt = document.getElementById('msg-input').value.trim();
-            if(!txt || !activeChat) return;
+    function updatePostUI(post) {
+        const countSpan = document.getElementById(`like-count-${post.id}`);
+        if (countSpan) countSpan.innerText = post.likes;
+    }
 
-            await db.from('mensajes').insert([{
-                de: currentUser,
-                para: activeChat,
-                contenido: txt,
-                fecha: new Date().toISOString()
-            }]);
-            
-            document.getElementById('msg-input').value = "";
+    /* =========================================
+       LOGIC: PERFIL Y SEGURIDAD
+       ========================================= */
+    async function updateSecurity() {
+        const newPass = document.getElementById('profile-new-pass').value;
+        if (!newPass || newPass.length < 4) return pushToast("⚠️ Contraseña muy corta", "warning");
+
+        const { error } = await db.from(NEXUS_CONFIG.TABLE_USERS)
+            .update({ password: newPass })
+            .eq('username', SESSION_USER);
+
+        if (error) pushToast("Error de servidor", "danger");
+        else {
+            pushToast("🔒 Seguridad actualizada correctamente", "success");
+            document.getElementById('profile-new-pass').value = '';
         }
+    }
 
-        // --- UTILIDADES ---
-        function showToast(msg, type = "primary") {
-            const c = document.getElementById('toast-container');
-            const t = document.createElement('div');
-            t.className = 'toast';
-            t.style.borderLeftColor = type === 'danger' ? 'var(--danger)' : 'var(--primary)';
-            t.innerHTML = `<i class="fas fa-info-circle"></i> <span>${msg}</span>`;
-            c.appendChild(t);
-            setTimeout(() => t.remove(), 3000);
+    /* =========================================
+       AJUSTES DE RESPONSIVIDAD (MÓVIL)
+       ========================================= */
+    function checkMobile() {
+        if (window.innerWidth < 1100) {
+            document.getElementById('nexus-app-root').style.gridTemplateColumns = "80px 1fr 0px";
+            document.querySelectorAll('.nav-link span, .nav-brand').forEach(el => el.style.display = 'none');
+            document.querySelector('.nexus-widgets').style.display = 'none';
+        } else {
+            document.getElementById('nexus-app-root').style.gridTemplateColumns = "280px 1fr 350px";
+            document.querySelectorAll('.nav-link span, .nav-brand').forEach(el => el.style.display = 'flex');
+            document.querySelector('.nexus-widgets').style.display = 'block';
         }
+    }
 
-        function closeModal() { document.getElementById('modal-container').style.display = 'none'; }
+    window.addEventListener('resize', checkMobile);
+    checkMobile();
 
-        async function cargarTodo() {
-            const { data } = await db.from('posts').select('*').order('created_at', { ascending: false });
-            data?.forEach(p => renderizarPost(p));
-        }
-
-        function conectarRealtime() {
-            db.channel('nexus_global')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, (p) => {
-                if(p.eventType === 'INSERT') renderizarPost(p.new, true);
-                if(p.eventType === 'DELETE') document.getElementById(`post-${p.old.id}`)?.remove();
-                if(p.eventType === 'UPDATE') {
-                    const el = document.getElementById(`post-${p.new.id}`);
-                    if(el) el.querySelector('.action-btn span').innerText = p.new.likes;
-                }
-            }).subscribe();
-        }
-
-        // --- CARGA INICIAL ---
-        const session = localStorage.getItem('nexus_user');
-        if(session) iniciarSistema(session);
-        else document.getElementById('auth-screen').style.display = 'flex';
-
-        function logout() { localStorage.removeItem('nexus_user'); location.reload(); }
-    </script>
+</script>
 </body>
 </html>
