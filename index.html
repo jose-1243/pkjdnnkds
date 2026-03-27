@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 
     <style>
+        /* MANTENEMOS TU DISEÑO EXACTO */
         :root { 
             --primary: #7c3aed; 
             --primary-hover: #6d28d9;
@@ -23,7 +24,6 @@
         * { box-sizing: border-box; margin: 0; padding: 0; transition: all 0.2s ease; }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text-main); line-height: 1.6; }
 
-        /* --- AUTH SCREEN --- */
         #auth-screen { height: 100vh; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle at top right, #1e1b4b, #0b0f1a); }
         .auth-card { background: var(--card); padding: 40px; border-radius: 28px; width: 100%; max-width: 400px; border: 1px solid var(--border); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); text-align: center; }
         .logo-area h1 { font-size: 2.5rem; font-weight: 800; letter-spacing: -1px; margin-bottom: 5px; background: linear-gradient(to right, #a78bfa, #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
@@ -39,14 +39,12 @@
         .btn:hover { background: var(--primary-hover); transform: translateY(-2px); }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* --- APP SCREEN --- */
         #main-app { display: none; width: 100%; max-width: 650px; margin: 0 auto; padding: 20px; }
         header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; position: sticky; top: 0; background: var(--bg); z-index: 100; }
         
         .post-creator { background: var(--card); padding: 25px; border-radius: 24px; border: 1px solid var(--border); margin-bottom: 30px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
         textarea { width: 100%; background: transparent; border: none; color: white; font-size: 1.2rem; resize: none; outline: none; min-height: 80px; font-family: inherit; }
         
-        /* --- FEED --- */
         .feed-item { background: var(--card); padding: 25px; border-radius: 24px; border: 1px solid var(--border); margin-bottom: 20px; position: relative; }
         .user-meta { display: flex; align-items: center; margin-bottom: 15px; }
         .avatar { width: 48px; height: 48px; background: linear-gradient(135deg, var(--primary), #4c1d95); border-radius: 16px; display: flex; justify-content: center; align-items: center; font-weight: 800; font-size: 1.2rem; margin-right: 15px; }
@@ -56,8 +54,10 @@
         .post-actions { display: flex; gap: 25px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); }
         .action-btn { background: none; border: none; color: var(--text-dim); cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; font-weight: 500; }
         .action-btn:hover { color: var(--primary); }
-        .action-btn.liked { color: #f43f5e; }
-        .action-btn.liked i { font-weight: 900; }
+        
+        /* Estilo extra para el like activo */
+        .action-btn.active-like { color: #f43f5e; font-weight: 600; }
+        .action-btn.active-like i { font-weight: 900; }
 
         .delete-btn { position: absolute; top: 25px; right: 25px; color: #ef4444; opacity: 0.3; cursor: pointer; background: none; border: none; }
         .delete-btn:hover { opacity: 1; }
@@ -101,21 +101,18 @@
             </div>
         </div>
 
-        <div id="feed-container">
-            </div>
+        <div id="feed-container"></div>
     </div>
 
     <script>
-        // CONFIGURACIÓN OFICIAL (API KEY SERGIO)
         const SB_URL = "https://cmqgzwgqvpxuzmivxjcp.supabase.co";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtcWd6d2dxdnB4dXptaXZ4amNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NDk0NzQsImV4cCI6MjA5MDEyNTQ3NH0.yxukU3-y26DNLdCfEymPNgUSGmHorhuQNPng_fEkWOo";
         
         const db = supabase.createClient(SB_URL, SB_KEY);
-
         let mode = 'login';
         let currentUser = null;
 
-        // --- MANEJO DE INTERFAZ ---
+        // --- MANEJO DE INTERFAZ (IGUAL) ---
         function setMode(m) {
             mode = m;
             document.getElementById('t-login').classList.toggle('active', m === 'login');
@@ -127,12 +124,11 @@
             document.getElementById('charCount').innerText = `${e.target.value.length} / 280`;
         });
 
-        // --- AUTENTICACIÓN ---
+        // --- AUTENTICACIÓN (IGUAL) ---
         async function execAuth() {
             const u = document.getElementById('user').value.trim();
             const p = document.getElementById('pass').value.trim();
             const status = document.getElementById('status');
-            
             if (!u || !p) return status.innerHTML = "⚠️ Escribe usuario y clave";
 
             if (mode === 'reg') {
@@ -144,7 +140,6 @@
                 status.innerHTML = "🔄 Conectando...";
                 const { data, error } = await db.from('usuarios').select('*');
                 if (error) return status.innerHTML = "❌ Error de API";
-                
                 const userMatch = data.find(f => f.username.toLowerCase() === u.toLowerCase() && f.password === p);
                 if (userMatch) iniciarApp(userMatch.username);
                 else status.innerHTML = "❌ Credenciales inválidas";
@@ -157,7 +152,6 @@
             document.getElementById('auth-screen').style.display = "none";
             document.getElementById('main-app').style.display = "block";
             document.getElementById('welcome-title').innerText = "NEXUS // " + username.toUpperCase();
-            
             cargarTodo();
             conectarCanalesRealtime();
         }
@@ -166,7 +160,6 @@
         async function cargarTodo() {
             const { data, error } = await db.from('posts').select('*').order('created_at', { ascending: false });
             if (error) return console.error("Error cargando feed");
-            
             const container = document.getElementById('feed-container');
             container.innerHTML = "";
             data.forEach(post => renderizarPost(post));
@@ -175,72 +168,61 @@
         async function publicarPost() {
             const text = document.getElementById('postInput').value.trim();
             if (!text) return;
-
             const btn = document.getElementById('btnPublicar');
             btn.disabled = true;
-
             const { error } = await db.from('posts').insert([{ autor: currentUser, texto: text, likes: 0 }]);
-            
             if (error) alert("Error al enviar: " + error.message);
-            else document.getElementById('postInput').value = "";
-            
+            else {
+                document.getElementById('postInput').value = "";
+                window.scrollTo({ top: 0, behavior: 'smooth' }); // Subir al publicar
+            }
             btn.disabled = false;
         }
 
-        async function darLike(postId, currentLikes) {
-            const { error } = await db.from('posts')
-                .update({ likes: currentLikes + 1 })
-                .eq('id', postId);
-            
+        async function darLike(postId, currentLikes, btn) {
+            // Efecto visual instantáneo
+            btn.classList.toggle('active-like');
+            const { error } = await db.from('posts').update({ likes: currentLikes + 1 }).eq('id', postId);
             if (error) console.log("Error en Like");
         }
 
         async function eliminarPost(postId) {
-            if(!confirm("¿Borrar este mensaje para siempre?")) return;
+            if(!confirm("¿Borrar este mensaje?")) return;
             const { error } = await db.from('posts').delete().eq('id', postId);
-            if (error) alert("No se pudo borrar");
         }
 
-        // --- REALTIME: EL MOTOR DEL NEXO ---
+        // --- REALTIME ---
         function conectarCanalesRealtime() {
             db.channel('nexus_global')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, (payload) => {
                 const { eventType, new: newRow, old: oldRow } = payload;
-
-                if (eventType === 'INSERT') {
-                    renderizarPost(newRow, true);
-                } 
+                if (eventType === 'INSERT') renderizarPost(newRow, true);
                 else if (eventType === 'UPDATE') {
-                    const postEl = document.getElementById(`post-${newRow.id}`);
-                    if (postEl) {
-                        postEl.querySelector('.like-count').innerText = newRow.likes;
-                    }
+                    const el = document.getElementById(`post-${newRow.id}`);
+                    if (el) el.querySelector('.like-count').innerText = newRow.likes;
                 } 
                 else if (eventType === 'DELETE') {
-                    const postEl = document.getElementById(`post-${oldRow.id}`);
-                    if (postEl) postEl.remove();
+                    const el = document.getElementById(`post-${oldRow.id}`);
+                    if (el) el.remove();
                 }
             })
             .subscribe((status) => {
-                console.log("Conexión Realtime:", status);
                 document.getElementById('online-indicator').style.background = status === 'SUBSCRIBED' ? '#10b981' : '#ef4444';
             });
         }
 
-        // --- RENDERIZADO DE POSTS ---
+        // --- RENDERIZADO (DISEÑO PROTEGIDO) ---
         function renderizarPost(post, alInicio = false) {
             const container = document.getElementById('feed-container');
-            if (document.getElementById(`post-${post.id}`)) return; // Evitar duplicados
+            if (document.getElementById(`post-${post.id}`)) return;
 
             const fecha = new Date(post.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const inicial = post.autor.charAt(0).toUpperCase();
             const esMio = post.autor === currentUser;
-
             const postHTML = `
                 <div class="feed-item" id="post-${post.id}">
                     ${esMio ? `<button class="delete-btn" onclick="eliminarPost(${post.id})"><i class="fas fa-trash"></i></button>` : ''}
                     <div class="user-meta">
-                        <div class="avatar">${inicial}</div>
+                        <div class="avatar">${post.autor.charAt(0).toUpperCase()}</div>
                         <div>
                             <p style="font-weight:600">${post.autor}</p>
                             <p style="font-size:0.75rem; color: var(--text-dim)">${fecha}</p>
@@ -248,23 +230,17 @@
                     </div>
                     <div class="post-body">${post.texto}</div>
                     <div class="post-actions">
-                        <button class="action-btn" onclick="darLike(${post.id}, ${post.likes})">
+                        <button class="action-btn" onclick="darLike(${post.id}, ${post.likes}, this)">
                             <i class="far fa-heart"></i> <span class="like-count">${post.likes || 0}</span>
                         </button>
-                        <button class="action-btn">
-                            <i class="far fa-comment"></i> Comentar
-                        </button>
+                        <button class="action-btn"><i class="far fa-comment"></i> Comentar</button>
                     </div>
-                </div>
-            `;
-
+                </div>`;
             if (alInicio) container.insertAdjacentHTML('afterbegin', postHTML);
-            else container.innerHTML += postHTML;
+            else container.insertAdjacentHTML('beforeend', postHTML);
         }
 
         function logout() { localStorage.removeItem('nexus_user'); location.reload(); }
-        
-        // Auto-login
         const savedSession = localStorage.getItem('nexus_user');
         if (savedSession) iniciarApp(savedSession);
     </script>
