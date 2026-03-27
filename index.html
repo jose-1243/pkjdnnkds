@@ -62,11 +62,12 @@
     </div>
 
     <script>
-        // CONFIGURACIÓN CORREGIDA
-        const SB_URL = "https://cmqgzwgqvpxuzmivxjcp.supabase.co";
-        const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtcWd6d2dxdnB4dXptaXZ4amNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg1MDUyODEsImV4cCI6MjA1NDA4MTI4MX0.7OQOfmZ89D7zK1MvWqZ7m-Dsh_U_eMInm8C7W-0V3fQ"; 
-        const db = supabase.createClient(SB_URL, SB_KEY);
+       // CONFIGURACIÓN LIMPIA Y REVISADA
+const SB_URL = "https://cmqgzwgqvpxuzmivxjcp.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtcWd6d2dxdnB4dXptaXZ4amNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg1MDUyODEsImV4cCI6MjA1NDA4MTI4MX0.7OQOfmZ89D7zK1MvWqZ7m-Dsh_U_eMInm8C7W-0V3fQ"; 
 
+const db = supabase.createClient(SB_URL, SB_KEY);
+        
         let mode = 'login';
         let currentUser = null;
 
